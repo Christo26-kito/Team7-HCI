@@ -101,16 +101,30 @@ export default function Auth({ mode }) {
   const [prefs, setPrefs] = useState({ brands: [], categories: [], colors: [], gender: null })
   const [err, setErr] = useState(null)
   const [busy, setBusy] = useState(false)
+  const [touched, setTouched] = useState({})
 
-  const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }))
+  const set = (k) => (e) => {
+    setForm((f) => ({ ...f, [k]: e.target.value }))
+    if (touched[k]) setTouched((x) => ({ ...x, [k]: true }))
+  }
+  const blur = (k) => () => setTouched((x) => ({ ...x, [k]: true }))
+
+  /* per-field validation (shown inline once a field is touched or after submit) */
+  const fieldErr = (k) => {
+    if (k === 'name' && isSignup && form.name.trim().length < 2) return 'auth.err.name'
+    if (k === 'email' && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return 'auth.err.email'
+    if (k === 'pass' && form.pass.length < 6) return 'auth.err.passMin'
+    return null
+  }
+  const showFieldErr = (k) => (touched[k] ? fieldErr(k) : null)
 
   const submit = async (e) => {
     e.preventDefault()
     setErr(null)
-    if (isSignup) {
-      if (form.name.trim().length < 2) return setErr('auth.err.required')
-      if (form.pass.length < 6) return setErr('auth.err.passMin')
-    }
+    setTouched({ name: true, email: true, pass: true })
+    if (isSignup && form.name.trim().length < 2) return setErr('auth.err.name')
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) return setErr('auth.err.email')
+    if (form.pass.length < 6) return setErr('auth.err.passMin')
     setBusy(true)
     const r = isSignup
       ? await signup({ name: form.name, email: form.email, pass: form.pass, prefs })
@@ -150,7 +164,16 @@ export default function Auth({ mode }) {
           {isSignup && (
             <label className="block">
               <span className="label-mega">{t('auth.name')}</span>
-              <input className="field mt-1.5" value={form.name} onChange={set('name')} placeholder="Gabriel" autoComplete="name" />
+              <input
+                className={`field mt-1.5 ${showFieldErr('name') ? '!border-warn/70' : ''}`}
+                value={form.name}
+                onChange={set('name')}
+                onBlur={blur('name')}
+                placeholder="Gabriel"
+                autoComplete="name"
+                aria-invalid={!!showFieldErr('name')}
+              />
+              {showFieldErr('name') && <p className="mt-1 text-xs font-semibold text-warn">{t(showFieldErr('name'))}</p>}
             </label>
           )}
           <label className="block">
@@ -158,24 +181,30 @@ export default function Auth({ mode }) {
             <input
               type="email"
               required
-              className="field mt-1.5"
+              className={`field mt-1.5 ${showFieldErr('email') ? '!border-warn/70' : ''}`}
               value={form.email}
               onChange={set('email')}
+              onBlur={blur('email')}
               placeholder="kamu@email.com"
               autoComplete="email"
+              aria-invalid={!!showFieldErr('email')}
             />
+            {showFieldErr('email') && <p className="mt-1 text-xs font-semibold text-warn">{t(showFieldErr('email'))}</p>}
           </label>
           <label className="block">
             <span className="label-mega">{t('auth.pass')}</span>
             <input
               type="password"
               required
-              className="field mt-1.5"
+              className={`field mt-1.5 ${showFieldErr('pass') ? '!border-warn/70' : ''}`}
               value={form.pass}
               onChange={set('pass')}
+              onBlur={blur('pass')}
               placeholder="••••••"
               autoComplete={isSignup ? 'new-password' : 'current-password'}
+              aria-invalid={!!showFieldErr('pass')}
             />
+            {showFieldErr('pass') && <p className="mt-1 text-xs font-semibold text-warn">{t(showFieldErr('pass'))}</p>}
           </label>
 
           {isSignup && <Onboarding prefs={prefs} setPrefs={setPrefs} lang={lang} />}

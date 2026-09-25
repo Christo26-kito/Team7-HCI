@@ -34,7 +34,7 @@ function RailArrows({ onPrev, onNext, prevLabel, nextLabel }) {
 }
 
 export default function Home() {
-  const { t, lang, query, setQuick, user, kidsMode } = useStore()
+  const { t, lang, query, setQuick, user, setKidsMode } = useStore()
   const [catGender, setCatGender] = useState('all')
   const [filters, setFilters] = useState({
     brand: null,
@@ -114,6 +114,11 @@ export default function Home() {
   const imgY = useTransform(scrollYProgress, [0, 1], ['0%', '14%'])
   const textY = useTransform(scrollYProgress, [0, 1], ['0%', '-8%'])
 
+  /* Global "kid section" theme follows the catalog gender filter */
+  useEffect(() => {
+    setKidsMode(catGender === 'kids')
+  }, [catGender, setKidsMode])
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
     const list = PRODUCTS.filter((p) => {
@@ -174,7 +179,7 @@ export default function Home() {
     <main>
       {/* ============ HERO + SLIDESHOW ============ */}
       <section ref={heroRef} className="relative overflow-hidden border-b border-line">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-12 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-8 lg:pb-24 lg:pt-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 pb-24 pt-12 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:px-8 lg:pb-32 lg:pt-20">
           <motion.div style={{ y: textY }} className="relative z-10">
             <motion.p initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7, ease: GLIDE }} className="label-mega">
               {t('hero.eyebrow')}
@@ -339,7 +344,7 @@ export default function Home() {
       </section>
 
       {/* ============ KID SECTION (ceria / colorful) ============ */}
-      {(catGender === 'kids' || kidsMode) && kidsItems.length > 0 && (
+      {catGender === 'kids' && kidsItems.length > 0 && (
         <section id="kids" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6 lg:px-8">
           <Reveal>
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-dashed p-5 sm:p-6" style={{ borderColor: '#F5B6C1' }}>
@@ -386,7 +391,7 @@ export default function Home() {
       )}
 
       {/* ============ RECOMMEND FOR YOU ============ */}
-      <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 pt-20 pb-14 sm:px-6 sm:pb-16 lg:px-8">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
             <div>

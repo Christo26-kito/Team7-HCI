@@ -1,37 +1,35 @@
 /**
  * HeroShoe3D.jsx — interactive 3D showcase slide for the hero slideshow.
  *
- * A stylised low-poly sneaker is built procedurally with Three.js
- * primitives (no external .glb needed, fully self-contained). The user can
- * drag to rotate 360° and scroll to zoom. Three.js is lazy-imported from a
- * CDN; if the network/CDN fails, a static product image renders instead so
- * the slideshow never breaks. All interaction happens inside the canvas —
- * the slideshow's arrows/dots sit outside it, so slider navigation is
- * untouched.
+ * Loads a real low-poly sneaker model (glTF, bundled under /public/models)
+ * and renders it with Three.js: drag to rotate 360°, scroll to zoom, and
+ * switch between three baked colorway textures (Midnight / Beach / Street).
+ * The model loads from the app's own assets, so there is no CDN or network
+ * dependency. If WebGL or the model fails to load, a static product image
+ * renders instead so the slideshow never breaks. All interaction happens
+ * inside the canvas — the slideshow's arrows/dots sit outside it, so slider
+ * navigation is untouched.
  */
 import { useEffect, useRef, useState } from 'react'
 import { useStore } from '../store/StoreContext'
 import { img, PRODUCTS } from '../data/products'
 
-const THREE_CDN = 'https://unpkg.com/three@0.160.0/build/three.module.js'
-
-/* Brand palette (hex) */
-const C = {
-  ink: 0x12151a,
-  raised: 0x1a1d24,
-  bone: 0xcfc7ba,
-  accent: 0x5f6b7c,
-  cream: 0xefe8da,
-  clay: 0xa4553c,
-  ok: 0x3f8f6b,
+/* Colorways: the model ships with three baked texture variants */
+const COLORWAYS = {
+  midnight: { texture: 'diffuseMidnight.jpg', chip: '#2b2f38', label: { id: 'Midnight', en: 'Midnight' } },
+  beach: { texture: 'diffuseBeach.jpg', chip: '#e8d9c4', label: { id: 'Beach', en: 'Beach' } },
+  street: { texture: 'diffuseStreet.jpg', chip: '#8b93a1', label: { id: 'Street', en: 'Street' } },
 }
 
 export default function HeroShoe3D({ fallbackSrc }) {
-  const { t, theme, setQuick } = useStore()
+  const { t, lang, setQuick } = useStore()
   const canvasRef = useRef(null)
   const wrapRef = useRef(null)
   const [failed, setFailed] = useState(false)
   const [ready, setReady] = useState(false)
+  const [cw, setCw] = useState('midnight')
+  const texCache = useRef({})
+  const applyRef = useRef(null)
   const heroProduct = PRODUCTS.find((p) => p.id === 'airmax90')
 
   useEffect(() => {
@@ -39,9 +37,11 @@ export default function HeroShoe3D({ fallbackSrc }) {
     let raf = 0
 
     const mount = async () => {
-      let THREE
+      let THREE, OrbitControls, GLTFLoader
       try {
-        THREE = await import(/* @vite-ignore */ THREE_CDN)
+        THREE = await import('three')
+        ;({ OrbitControls } = await import('three/examples/jsm/controls/OrbitControls.js'))
+        ;({ GLTFLoader } = await import('three/examples/jsm/loaders/GLTFLoader.js'))
       } catch {
         setFailed(true)
         return
@@ -51,183 +51,140 @@ export default function HeroShoe3D({ fallbackSrc }) {
       const canvas = canvasRef.current
       const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
+      renderer.outputColorSpace = THREE.SRGBColorSpace
+      renderer.toneMapping = THREE.ACESFilmicToneMapping
+      renderer.toneMappingExposure = 1.15
 
       const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(38, 1, 0.1, 100)
-      camera.position.set(0, 1.4, 7)
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
+      camera.position.set(0, 0.6, 4.6)
 
       /* ---------- lights (soft studio) ---------- */
-      scene.add(new THREE.HemisphereLight(0xe9ecf2, 0x0a0d14, 0.9))
-      const key = new THREE.DirectionalLight(0xffffff, 1.6)
+      scene.add(new THREE.HemisphereLight(0xe9ecf2, 0x0a0d14, 1.1))
+      const key = new THREE.DirectionalLight(0xffffff, 2.2)
       key.position.set(4, 6, 5)
       scene.add(key)
-      const rim = new THREE.DirectionalLight(C.accent, 0.8)
+      const rim = new THREE.DirectionalLight(0x9aa4b5, 1.2)
       rim.position.set(-5, 3, -4)
       scene.add(rim)
 
-      /* ---------- the shoe (procedural, stylised) ---------- */
-      const shoe = new THREE.Group()
-      const mat = (color, rough = 0.55) =>
-        new THREE.MeshStandardMaterial({ color, roughness: rough, metalness: 0.08 })
-
-      // sole
-      const sole = new THREE.Mesh(new THREE.BoxGeometry(4.6, 0.55, 1.7), mat(C.ink, 0.85))
-      sole.position.y = -0.55
-      sole.geometry.translate(0, 0, 0)
-      // rounded sole via scaling a cylinder cross: use scaled box + bevel illusion
-      shoe.add(sole)
-
-      // midsole wedge (accent line)
-      const mid = new THREE.Mesh(new THREE.BoxGeometry(4.35, 0.28, 1.55), mat(C.accent, 0.5))
-      mid.position.y = -0.24
-      shoe.add(mid)
-
-      // upper body
-      const upper = new THREE.Mesh(new THREE.SphereGeometry(1, 28, 20), mat(C.bone, 0.7))
-      upper.scale.set(2.1, 0.85, 0.82)
-      upper.position.set(-0.15, 0.45, 0)
-      shoe.add(upper)
-
-      // toe
-      const toe = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), mat(C.cream, 0.65))
-      toe.scale.set(1.15, 0.62, 0.78)
-      toe.position.set(1.75, 0.12, 0)
-      shoe.add(toe)
-
-      // heel collar
-      const heel = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.62, 1.1, 20), mat(C.clay, 0.7))
-      heel.position.set(-1.95, 0.55, 0)
-      heel.rotation.z = 0.12
-      shoe.add(heel)
-
-      // tongue
-      const tongue = new THREE.Mesh(new THREE.BoxGeometry(1.5, 0.16, 0.9), mat(C.cream, 0.7))
-      tongue.position.set(0.35, 1.05, 0)
-      tongue.rotation.z = -0.18
-      shoe.add(tongue)
-
-      // laces
-      for (let i = 0; i < 4; i++) {
-        const lace = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.0, 8), mat(0x2a2e35, 0.4))
-        lace.rotation.z = Math.PI / 2
-        lace.rotation.y = 0.28
-        lace.position.set(0.15 + i * 0.42, 0.85 + i * 0.09, 0)
-        shoe.add(lace)
-      }
-
-      // side stripe (brand mark)
-      const stripe = new THREE.Mesh(new THREE.BoxGeometry(1.9, 0.12, 0.05), mat(C.accent, 0.4))
-      stripe.position.set(-0.5, 0.15, 0.86)
-      shoe.add(stripe)
-      const stripe2 = stripe.clone()
-      stripe2.position.z = -0.86
-      shoe.add(stripe2)
-
-      shoe.rotation.y = -0.6
-      scene.add(shoe)
-
-      // pedestal disc
-      const disc = new THREE.Mesh(new THREE.CylinderGeometry(3.1, 3.1, 0.12, 48), mat(theme === 'dark' ? 0x161d27 : 0xe9ebec, 0.9))
-      disc.position.y = -0.85
+      /* ---------- pedestal disc ---------- */
+      const disc = new THREE.Mesh(
+        new THREE.CylinderGeometry(2.2, 2.2, 0.1, 48),
+        new THREE.MeshStandardMaterial({ color: 0xdfe2e4, roughness: 0.95 }),
+      )
+      disc.position.y = -1.06
       scene.add(disc)
 
-      // floating "archive" particles
-      const pGeo = new THREE.BufferGeometry()
-      const N = 90
-      const pos = new Float32Array(N * 3)
-      for (let i = 0; i < N; i++) {
-        const r = 3.4 + Math.random() * 2.2
-        const a = Math.random() * Math.PI * 2
-        const y = (Math.random() - 0.5) * 3.4
-        pos[i * 3] = Math.cos(a) * r
-        pos[i * 3 + 1] = y
-        pos[i * 3 + 2] = Math.sin(a) * r
+      /* ---------- lazy texture loader for the colorway variants ---------- */
+      const texLoader = new THREE.TextureLoader()
+      const loadTex = (name) => {
+        if (texCache.current[name]) return Promise.resolve(texCache.current[name])
+        return new Promise((res) =>
+          texLoader.load(`${import.meta.env.BASE_URL}models/${name}`, (tex) => {
+            tex.colorSpace = THREE.SRGBColorSpace
+            tex.anisotropy = 4
+            texCache.current[name] = tex
+            res(tex)
+          }),
+        )
       }
-      pGeo.setAttribute('position', new THREE.BufferAttribute(pos, 3))
-      const pts = new THREE.Points(
-        pGeo,
-        new THREE.PointsMaterial({ color: C.accent, size: 0.045, transparent: true, opacity: 0.55 }),
+
+      /* ---------- load the real sneaker model (local asset) ---------- */
+      const loader = new GLTFLoader()
+      const modelUrl = `${import.meta.env.BASE_URL}models/MaterialsVariantsShoe.gltf`
+      loader.load(
+        modelUrl,
+        (gltf) => {
+          if (disposed || !canvasRef.current) return
+          const shoe = gltf.scene
+          shoe.position.y = -0.35
+          shoe.rotation.y = -0.6
+          scene.add(shoe)
+
+          /* orbit controls: drag rotate 360° + scroll zoom, no panning */
+          const controls = new OrbitControls(camera, canvas)
+          controls.enablePan = false
+          controls.enableDamping = true
+          controls.dampingFactor = 0.08
+          controls.minDistance = 3.0
+          controls.maxDistance = 8
+          controls.minPolarAngle = 0.35
+          controls.maxPolarAngle = 1.65
+          controls.autoRotate = true
+          controls.autoRotateSpeed = 0.9
+          controls.target.set(0, 0, 0)
+          controls.update()
+
+          /* apply a colorway texture to the shoe's materials */
+          applyRef.current = (key) => {
+            loadTex(COLORWAYS[key].texture).then((tex) => {
+              if (!tex) return
+              shoe.traverse((o) => {
+                if (o.isMesh) {
+                  const mats = Array.isArray(o.material) ? o.material : [o.material]
+                  for (const m of mats) {
+                    if (m && m.map !== undefined) {
+                      m.map = tex
+                      m.needsUpdate = true
+                    }
+                  }
+                }
+              })
+            })
+          }
+          applyRef.current('midnight')
+
+          /* ---------- resize ---------- */
+          const fit = () => {
+            const w = wrapRef.current?.clientWidth || 480
+            const h = wrapRef.current?.clientHeight || 480
+            renderer.setSize(w, h, false)
+            camera.aspect = w / h
+            camera.updateProjectionMatrix()
+          }
+          fit()
+          const ro = new ResizeObserver(fit)
+          if (wrapRef.current) ro.observe(wrapRef.current)
+
+          /* ---------- loop ---------- */
+          let dragging = false
+          const onDown = () => {
+            dragging = true
+            controls.autoRotate = false
+          }
+          const onUp = () => {
+            dragging = false
+          }
+          canvas.addEventListener('pointerdown', onDown)
+          window.addEventListener('pointerup', onUp)
+
+          const clock = new THREE.Clock()
+          const loop = () => {
+            if (disposed) return
+            raf = requestAnimationFrame(loop)
+            const el = clock.getElapsedTime()
+            if (!dragging) controls.autoRotate = true
+            controls.update()
+            shoe.position.y = -0.35 + Math.sin(el * 1.1) * 0.05 // soft float
+            renderer.render(scene, camera)
+          }
+          loop()
+          setReady(true)
+
+          return () => {
+            disposed = true
+            cancelAnimationFrame(raf)
+            ro.disconnect()
+            canvas.removeEventListener('pointerdown', onDown)
+            window.removeEventListener('pointerup', onUp)
+          }
+        },
+        undefined,
+        () => {
+          if (!disposed) setFailed(true)
+        },
       )
-      scene.add(pts)
-
-      /* ---------- interaction: drag rotate + wheel zoom ---------- */
-      let dragging = false
-      let px = 0
-      let py = 0
-      let velX = 0.004 // idle auto-rotation
-      let velY = 0
-      let zoom = 7
-
-      const onDown = (e) => {
-        dragging = true
-        px = e.clientX
-        py = e.clientY
-        velX = 0
-      }
-      const onMove = (e) => {
-        if (!dragging) return
-        const dx = e.clientX - px
-        const dy = e.clientY - py
-        px = e.clientX
-        py = e.clientY
-        velX = -dx * 0.005
-        velY = -dy * 0.003
-        shoe.rotation.y += velX
-        shoe.rotation.x = Math.max(-0.5, Math.min(0.5, shoe.rotation.x + velY))
-      }
-      const onUp = () => {
-        dragging = false
-      }
-      const onWheel = (e) => {
-        e.preventDefault()
-        zoom = Math.max(4.5, Math.min(10, zoom + e.deltaY * 0.005))
-      }
-      canvas.addEventListener('pointerdown', onDown)
-      window.addEventListener('pointermove', onMove)
-      window.addEventListener('pointerup', onUp)
-      canvas.addEventListener('wheel', onWheel, { passive: false })
-
-      /* ---------- resize ---------- */
-      const fit = () => {
-        const w = wrapRef.current?.clientWidth || 480
-        const h = wrapRef.current?.clientHeight || 480
-        renderer.setSize(w, h, false)
-        camera.aspect = w / h
-        camera.updateProjectionMatrix()
-      }
-      fit()
-      const ro = new ResizeObserver(fit)
-      if (wrapRef.current) ro.observe(wrapRef.current)
-
-      /* ---------- loop ---------- */
-      const clock = new THREE.Clock()
-      const loop = () => {
-        if (disposed) return
-        raf = requestAnimationFrame(loop)
-        const el = clock.getElapsedTime()
-        if (!dragging) {
-          shoe.rotation.y += 0.004 // gentle auto-rotate
-          shoe.rotation.x *= 0.94 // settle back to level
-        }
-        shoe.position.y = Math.sin(el * 1.2) * 0.08 // soft float
-        pts.rotation.y = el * 0.05
-        camera.position.z += (zoom - camera.position.z) * 0.08
-        camera.lookAt(0, 0.2, 0)
-        renderer.render(scene, camera)
-      }
-      loop()
-      setReady(true)
-
-      return () => {
-        disposed = true
-        cancelAnimationFrame(raf)
-        ro.disconnect()
-        canvas.removeEventListener('pointerdown', onDown)
-        window.removeEventListener('pointermove', onMove)
-        window.removeEventListener('pointerup', onUp)
-        canvas.removeEventListener('wheel', onWheel)
-        renderer.dispose()
-      }
     }
 
     const cleanup = mount()
@@ -236,7 +193,13 @@ export default function HeroShoe3D({ fallbackSrc }) {
     }
   }, [])
 
-  /* CDN / WebGL failure → static image so the slide keeps working */
+  /* swap the baked colorway texture when a swatch is picked */
+  useEffect(() => {
+    if (!ready) return
+    applyRef.current?.(cw)
+  }, [cw, ready])
+
+  /* WebGL / model failure → static image so the slide keeps working */
   if (failed) {
     return (
       <img
@@ -259,9 +222,27 @@ export default function HeroShoe3D({ fallbackSrc }) {
         <span className="h-2 w-2 animate-pulse rounded-full bg-ok" />
         <span className="label-mega !text-ink">{t('hero3d.label')}</span>
       </div>
-      <p className="pointer-events-none absolute bottom-3 left-1/2 w-max -translate-x-1/2 text-center text-[10px] font-medium uppercase tracking-wider text-muted">
+      <p className="pointer-events-none absolute bottom-9 left-1/2 w-max -translate-x-1/2 text-center text-[10px] font-medium uppercase tracking-wider text-muted">
         {t('hero3d.hint')}
       </p>
+
+      {/* colorway swatches */}
+      {ready && (
+        <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 items-center gap-2">
+          {Object.entries(COLORWAYS).map(([k, c]) => (
+            <button
+              key={k}
+              onClick={() => setCw(k)}
+              title={c.label[lang]}
+              aria-label={c.label[lang]}
+              className={`h-5 w-5 rounded-full border-2 transition-all duration-300 ${
+                cw === k ? 'scale-110 border-ink ring-2 ring-ink/30' : 'border-line/60 hover:scale-105'
+              }`}
+              style={{ background: c.chip }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   )
 }

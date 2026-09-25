@@ -60,7 +60,7 @@ const IconX = (p) => (
 )
 
 export default function Navbar() {
-  const { t, lang, setLang, theme, toggleTheme, soundOn, setSoundOn, query, setQuery, setQuick, cartCount, cartBump, user, kidsMode, setKidsMode } =
+  const { t, lang, setLang, theme, toggleTheme, soundOn, setSoundOn, query, setQuery, setQuick, cartCount, cartBump, user } =
     useStore()
   const location = useLocation()
   const isHome = location.pathname === '/'
@@ -338,21 +338,6 @@ export default function Navbar() {
               </svg>
             )}
           </Link>
-
-          {/* Kids mode toggle */}
-          <button
-            onClick={() => {
-              setKidsMode(!kidsMode)
-              sfx.tap()
-            }}
-            aria-pressed={kidsMode}
-            title={t('nav.kids')}
-            className={`hidden rounded-card border px-2.5 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide sm:block ${
-              kidsMode ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
-            }`}
-          >
-            {t('nav.kids')}
-          </button>
 
           {/* Cart */}
           <Link

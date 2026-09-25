@@ -8,6 +8,14 @@ import { GLIDE } from '../components/Reveal'
 import { sfx } from '../lib/sound'
 import FavButton from '../components/FavLikeButton'
 
+const CAT_LABEL = {
+  running: { id: 'Lari', en: 'Running' },
+  lifestyle: { id: 'Lifestyle', en: 'Lifestyle' },
+  basketball: { id: 'Basket', en: 'Basketball' },
+  trail: { id: 'Trail', en: 'Trail' },
+  kids: { id: 'Anak', en: 'Kids' },
+}
+
 const STATUS_KEY = {
   pending: 'dash.status.pending',
   inprogress: 'dash.status.inprogress',
