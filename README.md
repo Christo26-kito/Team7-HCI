@@ -1,4 +1,4 @@
-# Project-HCI-Midterm
+# Project-HCI
 
 Bangun sebuah website e-commerce sepatu (frontend only, tanpa backend/database,
 data boleh dummy/hardcoded) dengan spesifikasi berikut.
