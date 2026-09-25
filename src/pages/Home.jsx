@@ -2,15 +2,17 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
-import { PRODUCTS, PRICE_MIN, PRICE_MAX, formatIDR } from '../data/products'
+import { PRODUCTS, PRICE_MIN, PRICE_MAX, formatIDR, img } from '../data/products'
+import { recommend } from '../lib/recommend'
 import ProductCard from '../components/ProductCard'
 import FilterRail from '../components/FilterRail'
 import Reveal, { GLIDE } from '../components/Reveal'
+import HeroShoe3D from '../components/HeroShoe3D'
 import { sfx } from '../lib/sound'
 import useDragScroll from '../lib/useDragScroll'
 
 const SORTS = ['popular', 'newest', 'priceAsc', 'priceDesc', 'rating']
-const CAT_GENDERS = ['all', 'men', 'women']
+const CAT_GENDERS = ['all', 'men', 'women', 'kids']
 const CAT_ROWS = 2
 const SLIDE_MS = 5000
 
@@ -32,7 +34,7 @@ function RailArrows({ onPrev, onNext, prevLabel, nextLabel }) {
 }
 
 export default function Home() {
-  const { t, lang, query, setQuick } = useStore()
+  const { t, lang, query, setQuick, user, kidsMode } = useStore()
   const [catGender, setCatGender] = useState('all')
   const [filters, setFilters] = useState({
     brand: null,
@@ -71,7 +73,7 @@ export default function Home() {
   /* ---------- hero slideshow ---------- */
   const slides = useMemo(
     () => [
-      { img: '/images/hero.png', brand: 'Sole Archive', model: t('hero.badge'), price: null, product: null },
+      { three: true, brand: 'Sole Archive', model: t('hero.badge'), price: null, product: null },
       ...PRODUCTS.filter((p) => p.tags.includes('popular'))
         .slice(0, 3)
         .map((p) => ({ img: p.image, brand: p.brand, model: p.model, price: p.price, product: p })),
@@ -118,6 +120,7 @@ export default function Home() {
       if (p.status === 'soon' && !q) return false
       if (catGender === 'women' && p.gender !== 'women') return false
       if (catGender === 'men' && p.gender !== 'men' && p.gender !== 'unisex') return false
+      if (catGender === 'kids' && p.gender !== 'kids') return false
       if (filters.brand && p.brand !== filters.brand) return false
       if (filters.size && !p.sizes.includes(filters.size)) return false
       if (filters.color && p.colorKey !== filters.color) return false
@@ -158,6 +161,12 @@ export default function Home() {
   }, [filtered, catCols])
 
   const favorites = useMemo(() => [...PRODUCTS].filter((p) => p.status !== 'soon').sort((a, b) => b.likes - a.likes).slice(0, 8), [])
+
+  const kidsItems = useMemo(() => PRODUCTS.filter((p) => p.gender === 'kids' && p.status !== 'soon'), [])
+  const recs = useMemo(
+    () => (user ? recommend(PRODUCTS, user.prefs, 4) : PRODUCTS.filter((p) => p.status !== 'soon').sort((a, b) => b.likes - a.likes).slice(0, 4)),
+    [user],
+  )
 
   const marqueeItems = [1, 2, 3, 4, 5].map((i) => t(`marquee.${i}`))
 
@@ -241,7 +250,9 @@ export default function Home() {
                   transition={{ duration: 0.9, ease: GLIDE }}
                   className="absolute inset-0"
                 >
-                  {slides[slide].product ? (
+                  {slides[slide].three ? (
+                    <HeroShoe3D key={slide} fallbackSrc={img('/images/hero.png')} />
+                  ) : slides[slide].product ? (
                     <button
                       onClick={() => {
                         setQuick(slides[slide].product)
@@ -324,6 +335,80 @@ export default function Home() {
               </button>
             </div>
           </motion.div>
+        </div>
+      </section>
+
+      {/* ============ KID SECTION (ceria / colorful) ============ */}
+      {(catGender === 'kids' || kidsMode) && kidsItems.length > 0 && (
+        <section id="kids" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6 lg:px-8">
+          <Reveal>
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-dashed p-5 sm:p-6" style={{ borderColor: '#F5B6C1' }}>
+              <div className="flex items-center gap-4">
+                <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-3xl" style={{ background: 'linear-gradient(135deg,#FFD6E0,#D6F0FF)' }}>
+                  👟
+                </span>
+                <div>
+                  <h2 className="font-serif text-3xl font-bold tracking-tight" style={{ color: '#E85C7E' }}>{t('kids.title')}</h2>
+                  <p className="mt-1 text-sm font-medium" style={{ color: '#8a6d8f' }}>{t('kids.sub')}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => {
+                  setCatGender('kids')
+                  document.getElementById('katalog')?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="rounded-full px-5 py-2.5 font-display text-sm font-bold text-white shadow-lg transition-transform hover:scale-105"
+                style={{ background: 'linear-gradient(135deg,#FF8FAB,#6FB8FF)' }}
+              >
+                {t('nav.kids')} →
+              </button>
+            </div>
+          </Reveal>
+
+          <div className="no-scrollbar mt-5 flex gap-4 overflow-x-auto pb-2">
+            {kidsItems.map((p) => (
+              <div key={p.id} className="w-[180px] shrink-0">
+                <div
+                  className="group flex h-full flex-col rounded-2xl border-2 bg-white p-3 transition-transform hover:-translate-y-1"
+                  style={{ borderColor: p.colorHex, boxShadow: `0 10px 30px -12px ${p.colorHex}` }}
+                >
+                  <button onClick={() => setQuick(p)} className="img-tile !rounded-xl aspect-square w-full" style={{ background: `${p.colorHex}22` }}>
+                    <img src={p.image} alt={p.model} loading="lazy" />
+                  </button>
+                  <p className="label-mega mt-2.5" style={{ color: p.colorHex }}>{p.brand}</p>
+                  <p className="font-display text-sm font-bold">{p.model}</p>
+                  <p className="mt-0.5 text-[11px] font-medium" style={{ color: p.colorHex }}>{t('kids.sizeNote')}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* ============ RECOMMEND FOR YOU ============ */}
+      <section className="mx-auto max-w-7xl px-4 pt-20 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-line pb-6">
+            <div>
+              <h2 className="font-serif text-3xl font-semibold tracking-tight sm:text-4xl">{t('dash.recTitle')}</h2>
+              <p className="mt-1.5 max-w-md text-sm text-muted">{user ? t('dash.recSub') : t('dash.recEmpty')}</p>
+            </div>
+            {!user && (
+              <Link to="/signup" className="btn-ghost !py-2.5 text-xs">{t('auth.linkSignup')} →</Link>
+            )}
+          </div>
+        </Reveal>
+        <div className="grid grid-cols-2 gap-5 pt-6 sm:grid-cols-4">
+          {recs.map((p) => (
+            <div key={p.id} className="group flex flex-col rounded-card border border-line bg-surface p-4 transition-all duration-300 ease-glide hover:-translate-y-1 hover:shadow-lift">
+              <button onClick={() => setQuick(p)} className="img-tile aspect-square w-full">
+                <img src={p.image} alt={p.model} loading="lazy" />
+              </button>
+              <p className="label-mega mt-3">{p.brand}</p>
+              <p className="truncate font-display text-sm font-semibold">{p.model}</p>
+              <p className="mt-1 font-display text-sm font-bold">{formatIDR(p.price)}</p>
+            </div>
+          ))}
         </div>
       </section>
 

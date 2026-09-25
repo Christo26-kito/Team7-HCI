@@ -69,10 +69,11 @@ const validators = {
 }
 
 export default function Checkout() {
-  const { t, cartDetailed, subtotal, discount, shipping, total, setLastOrder, clearCart } = useStore()
+  const { t, cartDetailed, subtotal, discount, shipping, total, placeOrder, clearCart } = useStore()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [shake, setShake] = useState(false)
+  const [payLater, setPayLater] = useState(false)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -120,7 +121,7 @@ export default function Checkout() {
     if (validateStep(step)) setStep((s) => Math.min(2, s + 1))
   }
 
-  const placeOrder = () => {
+  const confirmOrder = () => {
     const order = {
       id: 'SA-' + Math.floor(100000 + Math.random() * 900000),
       date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
@@ -131,12 +132,23 @@ export default function Checkout() {
       total,
       name: form.name,
       address: `${form.address}, ${form.city} ${form.zip}`,
+      city: form.city,
+      zip: form.zip,
       method: form.method,
     }
-    setLastOrder(order)
-    clearCart()
-    sfx.success()
-    navigate('/success')
+    if (payLater) {
+      // Save as a PENDING order so it shows up in Order History → Pending Payment.
+      placeOrder({ ...order, status: 'pending' })
+      clearCart()
+      sfx.tap()
+      navigate('/account')
+    } else {
+      // Immediate payment → courier already on the way.
+      placeOrder({ ...order, status: 'inprogress' })
+      clearCart()
+      sfx.success()
+      navigate('/success')
+    }
   }
 
   const err = (k) => (errors[k] ? t(errors[k]) : null)
@@ -269,6 +281,28 @@ export default function Checkout() {
             >
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-card border border-line bg-surface p-5">
+                  <p className="label-mega mb-2">{t('co.payNow')} / {t('co.payLater')}</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => setPayLater(false)}
+                      className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                        !payLater ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent'
+                      }`}
+                    >
+                      {t('co.payNow')}
+                    </button>
+                    <button
+                      onClick={() => setPayLater(true)}
+                      className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                        payLater ? 'border-warn bg-warn text-bg' : 'border-line text-muted hover:border-accent'
+                      }`}
+                    >
+                      {t('co.payLater')}
+                    </button>
+                  </div>
+                  {payLater && <p className="mt-2 text-[11px] text-muted">{t('co.payLaterSub')}</p>}
+                </div>
+                <div className="rounded-card border border-line bg-surface p-5">
                   <p className="label-mega mb-2">{t('co.reviewAddr')}</p>
                   <p className="font-display text-sm font-bold">{form.name}</p>
                   <p className="mt-1 text-sm text-muted">{form.address}</p>
@@ -345,7 +379,7 @@ export default function Checkout() {
               {t('co.next')} →
             </motion.button>
           ) : (
-            <motion.button whileTap={{ scale: 0.97 }} onClick={placeOrder} className="btn-primary">
+            <motion.button whileTap={{ scale: 0.97 }} onClick={confirmOrder} className="btn-primary">
               {t('co.place')} — {formatIDR(total)}
             </motion.button>
           )}

@@ -9,6 +9,7 @@ const CAT_LABEL = {
   lifestyle: { id: 'Lifestyle', en: 'Lifestyle' },
   basketball: { id: 'Basket', en: 'Basketball' },
   trail: { id: 'Trail', en: 'Trail' },
+  kids: { id: 'Anak', en: 'Kids' },
 }
 
 function toggle(list, value) {

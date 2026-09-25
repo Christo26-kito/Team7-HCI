@@ -506,14 +506,110 @@ export const PRODUCTS = [
       en: 'A mary-jane variant with a white cross strap. Soft pale pink suede paired with a white stripe and an elegant thin sole.',
     },
   },
+  /* ---------- KID SECTION (ceria / colorful) ---------- */
+  {
+    id: 'kids-campus',
+    brand: 'Converse',
+    model: 'Kids Chuck 70',
+    colorway: 'Navy / Gum',
+    gender: 'kids',
+    category: 'kids',
+    price: 899000,
+    oldPrice: 1099000,
+    rating: 4.7,
+    likes: 2110,
+    sizes: [28, 29, 30, 31, 32, 33],
+    colorKey: 'grey',
+    colorHex: '#3b4a6b',
+    image: '/images/p-campus00s.png',
+    tags: ['new'],
+    desc: {
+      id: 'Ikon Chuck yang kebesaran untuk mainan, mungil untuk kaki mungil. Kanvas tebal, sol gum lentur, dan stripe putih klasik.',
+      en: 'The Chuck icon in miniature. Heavy canvas, flexible gum sole, and the classic white trim — built for little feet.',
+    },
+  },
+  {
+    id: 'kids-gazelle',
+    brand: 'Adidas',
+    model: 'Kids Gazelle',
+    colorway: 'Blue / Cream',
+    gender: 'kids',
+    category: 'kids',
+    price: 1199000,
+    oldPrice: null,
+    rating: 4.8,
+    likes: 1742,
+    sizes: [28, 29, 30, 31, 32, 33, 34],
+    colorKey: 'cream',
+    colorHex: '#7fa8d9',
+    image: '/images/p-gazelle.png',
+    tags: ['popular'],
+    desc: {
+      id: 'Gazelle mini dengan suede lembut dan tiga garis ikonik. Empuk, ringan, dan tahan main seharian di sekolah.',
+      en: 'Mini Gazelle in soft suede with the iconic three stripes. Light, plush, and made to survive a whole day of school.',
+    },
+  },
+  {
+    id: 'kids-jordan',
+    brand: 'Jordan',
+    model: 'Junior 1 Retro',
+    colorway: 'Bred / White',
+    gender: 'kids',
+    category: 'kids',
+    price: 1799000,
+    oldPrice: null,
+    rating: 4.9,
+    likes: 2864,
+    sizes: [29, 30, 31, 32, 33, 34],
+    colorKey: 'clay',
+    colorHex: '#8b2635',
+    image: '/images/p-aj1.png',
+    tags: ['popular', 'new'],
+    desc: {
+      id: 'Siluet Air Jordan 1 versi junior dengan perpaduan merah-hitam legendaris. Nyaman untuk main basket pertama di taman.',
+      en: 'The Junior Air Jordan 1 in the legendary red-black mix. Comfortable enough for first basketball at the park.',
+    },
+  },
+  {
+    id: 'kids-suede',
+    brand: 'Nike',
+    model: 'Kids Suede Trainer',
+    colorway: 'Sage / Cream',
+    gender: 'kids',
+    category: 'kids',
+    price: 999000,
+    oldPrice: 1199000,
+    rating: 4.6,
+    likes: 980,
+    sizes: [28, 29, 30, 31, 32],
+    colorKey: 'sage',
+    colorHex: '#9fbf9f',
+    image: '/images/p-suede.png',
+    tags: ['new'],
+    desc: {
+      id: 'Trainer retro suede dalam sage lembut. Ringan, mudah dicuci, dan pas untuk kaki aktif yang tumbuh cepat.',
+      en: 'A retro suede trainer in soft sage. Light, easy to wash, and cut for fast-growing active feet.',
+    },
+  },
 ]
 
-const EU_TO_UK = { 36: 3.5, 37: 4, 38: 5, 39: 6, 40: 6.5, 41: 7.5, 42: 8, 43: 9, 44: 9.5, 45: 10.5, 46: 11 }
+const EU_TO_UK = {
+  28: 2.5, 29: 3, 30: 3.5, 31: 4, 32: 4.5, 33: 5, 34: 5.5, 35: 6,
+  36: 3.5, 37: 4, 38: 5, 39: 6, 40: 6.5, 41: 7.5, 42: 8, 43: 9, 44: 9.5, 45: 10.5, 46: 11,
+}
 for (const p of PRODUCTS) p.sizes = p.sizes.map((s) => EU_TO_UK[s])
+
+/* Resolve image paths against the deploy base URL (GitHub Pages subpath).
+ * Dev uses '/'; the Pages build uses '/Team7-HCI/' — both work. */
+const BASE = import.meta.env.BASE_URL
+for (const p of PRODUCTS) p.image = BASE + p.image.replace(/^\/?images\//, 'images/')
+
+export const img = (path) => BASE + path.replace(/^\/?/, '')
 
 export const BRANDS = [...new Set(PRODUCTS.map((p) => p.brand))].sort()
 export const ALL_SIZES = [...new Set(PRODUCTS.flatMap((p) => p.sizes))].sort((a, b) => a - b)
-export const CATEGORIES = ['running', 'lifestyle', 'basketball', 'trail']
+export const CATEGORIES = ['running', 'lifestyle', 'basketball', 'trail', 'kids']
+export const KID_SIZES = [2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
 export const COLOR_KEYS = [
   { key: 'bone', hex: '#e3ddd1', label: { id: 'Bone', en: 'Bone' } },
   { key: 'cream', hex: '#efe8da', label: { id: 'Cream', en: 'Cream' } },

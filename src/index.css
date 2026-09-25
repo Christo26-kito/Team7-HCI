@@ -109,6 +109,21 @@
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+  /* ---------- Kid Section: playful theme when active ---------- */
+  .kids-theme {
+    --c-bg-rgb: 255 247 241;
+    --c-surface-rgb: 255 252 248;
+    --c-raised-rgb: 255 255 255;
+    --c-accent-rgb: 255 128 170;
+    --c-ok-rgb: 90 200 150;
+    --c-warn-rgb: 255 170 60;
+  }
+  .kids-theme .dark {
+    --c-bg-rgb: 24 20 28;
+    --c-surface-rgb: 32 26 38;
+    --c-raised-rgb: 40 32 48;
+    --c-accent-rgb: 255 150 190;
+  }
 }
 
 @layer utilities {

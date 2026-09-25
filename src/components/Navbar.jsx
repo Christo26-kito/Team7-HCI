@@ -60,7 +60,7 @@ const IconX = (p) => (
 )
 
 export default function Navbar() {
-  const { t, lang, setLang, theme, toggleTheme, soundOn, setSoundOn, query, setQuery, setQuick, cartCount, cartBump } =
+  const { t, lang, setLang, theme, toggleTheme, soundOn, setSoundOn, query, setQuery, setQuick, cartCount, cartBump, user, kidsMode, setKidsMode } =
     useStore()
   const location = useLocation()
   const isHome = location.pathname === '/'
@@ -317,6 +317,42 @@ export default function Navbar() {
               </motion.a>
             ))}
           </div>
+
+          {/* Account */}
+          <Link
+            to={user ? '/account' : '/login'}
+            aria-label={user ? t('dash.title') : t('auth.login')}
+            title={user ? `${user.name}` : t('auth.login')}
+            className={`relative hidden rounded-card border p-2 transition-all duration-300 ease-glide sm:block ${
+              location.pathname === '/account' ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
+            }`}
+          >
+            {user ? (
+              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent font-display text-[9px] font-bold text-bg">
+                {user.name.slice(0, 2).toUpperCase()}
+              </span>
+            ) : (
+              <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <circle cx="12" cy="8" r="3.5" />
+                <path d="M5 20c1.5-3.5 4-5 7-5s5.5 1.5 7 5" />
+              </svg>
+            )}
+          </Link>
+
+          {/* Kids mode toggle */}
+          <button
+            onClick={() => {
+              setKidsMode(!kidsMode)
+              sfx.tap()
+            }}
+            aria-pressed={kidsMode}
+            title={t('nav.kids')}
+            className={`hidden rounded-card border px-2.5 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide sm:block ${
+              kidsMode ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
+            }`}
+          >
+            {t('nav.kids')}
+          </button>
 
           {/* Cart */}
           <Link
