@@ -344,7 +344,7 @@ export default function Navbar() {
             to="/cart"
             aria-label={t('nav.cart')}
             className={`relative rounded-card border p-2 transition-all duration-300 ease-glide ${
-              location.pathname === '/cart' ? 'border-ink bg-ink text-bg' : 'border-line text-ink hover:border-accent'
+              location.pathname === '/cart' ? 'border-ink text-ink' : 'border-line text-ink hover:border-accent'
             }`}
           >
             <motion.span
