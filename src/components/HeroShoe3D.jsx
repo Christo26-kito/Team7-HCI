@@ -56,8 +56,8 @@ export default function HeroShoe3D({ fallbackSrc }) {
       renderer.toneMappingExposure = 1.15
 
       const scene = new THREE.Scene()
-      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100)
-      camera.position.set(0, 0.6, 4.6)
+      const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100)
+      camera.position.set(0, 0.25, 3.3)
 
       /* ---------- lights (soft studio) ---------- */
       scene.add(new THREE.HemisphereLight(0xe9ecf2, 0x0a0d14, 1.1))
@@ -98,17 +98,35 @@ export default function HeroShoe3D({ fallbackSrc }) {
         (gltf) => {
           if (disposed || !canvasRef.current) return
           const shoe = gltf.scene
-          shoe.position.y = -0.35
           shoe.rotation.y = -0.6
           scene.add(shoe)
+
+          /* normalise: scale the real model to a known size, re-centre on the
+             origin so the camera framing is exact regardless of the asset's
+             native scale/offset */
+          shoe.updateMatrixWorld(true)
+          const fitBox = new THREE.Box3().setFromObject(shoe)
+          const fitSize = fitBox.getSize(new THREE.Vector3())
+          const fitCenter = fitBox.getCenter(new THREE.Vector3())
+          const s = 1.5 / Math.max(fitSize.x, fitSize.y, fitSize.z)
+          shoe.scale.setScalar(s)
+          shoe.position.sub(fitCenter.multiplyScalar(s))
+          const homeY = shoe.position.y + 0.12 // lift slightly so it sits visually centred
+
+          /* seat the pedestal disc right under the shoe's soles */
+          const seatedBox = new THREE.Box3().setFromObject(shoe)
+          disc.position.y = seatedBox.min.y - 0.08
+          disc.scale.setScalar((seatedBox.max.x - seatedBox.min.x) * 0.55)
+          // give the disc a bit more contrast so it reads as a pedestal
+          disc.material.color.set(0xb9bec7)
 
           /* orbit controls: drag rotate 360° + scroll zoom, no panning */
           const controls = new OrbitControls(camera, canvas)
           controls.enablePan = false
           controls.enableDamping = true
           controls.dampingFactor = 0.08
-          controls.minDistance = 3.0
-          controls.maxDistance = 8
+          controls.minDistance = 2.4
+          controls.maxDistance = 5.5
           controls.minPolarAngle = 0.35
           controls.maxPolarAngle = 1.65
           controls.autoRotate = true
@@ -166,7 +184,7 @@ export default function HeroShoe3D({ fallbackSrc }) {
             const el = clock.getElapsedTime()
             if (!dragging) controls.autoRotate = true
             controls.update()
-            shoe.position.y = -0.35 + Math.sin(el * 1.1) * 0.05 // soft float
+            shoe.position.y = homeY + Math.sin(el * 1.1) * 0.06 // soft float
             renderer.render(scene, camera)
           }
           loop()
