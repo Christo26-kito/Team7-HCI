@@ -259,6 +259,10 @@ export const dict = {
     'dash.prefsSave': 'Simpan Preferensi',
     'dash.prefsSaved': 'Preferensi tersimpan.',
     'dash.prefsGenderAll': 'Semua',
+    'dash.prefsCount': 'dipilih',
+    'dash.prefsGenderEmpty': 'Kosongkan untuk menampilkan semua kategori.',
+    'dash.prefsImpact': 'Perubahan langsung memengaruhi daftar “Rekomendasi untukmu” — lihat tab Rekomendasi.',
+    'dash.prefsEmptyHint': 'Belum ada pilihan — rekomendasi akan berdasarkan popularitas.',
     'dash.status.pending': 'Menunggu Pembayaran',
     'dash.status.inprogress': 'Diproses Kurir',
     'dash.status.completed': 'Selesai',
@@ -289,9 +293,9 @@ export const dict = {
     'track.noOrder': 'Pesanan tidak ditemukan.',
     'track.restart': 'Simulasikan Lagi',
 
-    /* ---------- 3D hero ---------- */
-    'hero3d.hint': 'Seret untuk rotasi 360° · gulir untuk zoom',
-    'hero3d.label': 'Pandang 360°',
+    /* ---------- hero tilt (CSS 3D, no WebGL) ---------- */
+    'hero3d.hint': 'Gerakkan kursor untuk efek 3D',
+    'hero3d.label': 'Tampak 3D',
 
     /* ---------- kids section ---------- */
     'kids.title': 'Kid Section',
@@ -559,6 +563,10 @@ export const dict = {
     'dash.prefsSave': 'Save Preferences',
     'dash.prefsSaved': 'Preferences saved.',
     'dash.prefsGenderAll': 'All',
+    'dash.prefsCount': 'selected',
+    'dash.prefsGenderEmpty': 'Clear to show every category.',
+    'dash.prefsImpact': 'Changes immediately affect your “Recommended for You” list — see the Recommendations tab.',
+    'dash.prefsEmptyHint': 'No selections yet — recommendations will be popularity-based.',
     'dash.status.pending': 'Pending Payment',
     'dash.status.inprogress': 'Courier In Progress',
     'dash.status.completed': 'Completed',
@@ -589,9 +597,9 @@ export const dict = {
     'track.noOrder': 'Order not found.',
     'track.restart': 'Replay Simulation',
 
-    /* ---------- 3D hero ---------- */
-    'hero3d.hint': 'Drag to rotate 360° · scroll to zoom',
-    'hero3d.label': '360° View',
+    /* ---------- hero tilt (CSS 3D, no WebGL) ---------- */
+    'hero3d.hint': 'Move cursor for 3D effect',
+    'hero3d.label': '3D View',
 
     /* ---------- kids section ---------- */
     'kids.title': 'Kid Section',

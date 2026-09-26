@@ -7,8 +7,10 @@
  */
 import { useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useStore } from '../store/StoreContext'
 
 export default function HeroTilt({ src, alt, brand, model, price, formatIDR, onQuick, children }) {
+  const { t } = useStore()
   const wrapRef = useRef(null)
   const cardRef = useRef(null)
   const shadowRef = useRef(null)
@@ -102,7 +104,7 @@ export default function HeroTilt({ src, alt, brand, model, price, formatIDR, onQ
         className="pointer-events-none absolute right-4 top-4 z-10 rounded-card border border-line bg-raised/85 px-2.5 py-1 backdrop-blur"
       >
         <span className="font-display text-[10px] font-bold uppercase tracking-wider text-muted">
-          Gerak kursor — tampak 3D
+          {t('hero3d.hint')} · {t('hero3d.label')}
         </span>
       </div>
     </div>

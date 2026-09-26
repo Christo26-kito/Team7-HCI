@@ -99,6 +99,13 @@ export default function Home() {
   }
   const favRailRef = useRef(null)
   const scrollFavRail = (dir) => favRailRef.current?.scrollBy({ left: dir * favRailRef.current.clientWidth, behavior: 'smooth' })
+
+  /* deterministic CTA anchor scroll (native fragment scroll is flaky in some browsers) */
+  const ctaTo = (id, e) => {
+    e.preventDefault()
+    const el = document.getElementById(id)
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
   const soonRailRef = useRef(null)
   const scrollSoonRail = (dir) => soonRailRef.current?.scrollBy({ left: dir * soonRailRef.current.clientWidth, behavior: 'smooth' })
   useDragScroll(railRef)
@@ -211,10 +218,10 @@ export default function Home() {
               transition={{ duration: 0.8, delay: 0.62, ease: GLIDE }}
               className="mt-8 flex flex-wrap gap-3"
             >
-              <a href="#katalog" className="btn-primary">
+              <a href="#katalog" onClick={(e) => ctaTo('katalog', e)} className="btn-primary">
                 {t('hero.cta1')}
               </a>
-              <a href="#favorit" className="btn-ghost">
+              <a href="#favorit" onClick={(e) => ctaTo('favorit', e)} className="btn-ghost">
                 {t('hero.cta2')}
               </a>
             </motion.div>
@@ -469,9 +476,9 @@ export default function Home() {
       </section>
 
       {/* ============ CATALOG ============ */}
-      <section id="katalog" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-24 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
+          <div id="katalog" className="flex scroll-mt-20 flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>
               <h2 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t('cat.title')}</h2>
               <p className="mt-2 max-w-md text-sm text-muted">{t('cat.sub')}</p>
@@ -612,9 +619,9 @@ export default function Home() {
       </section>
 
       {/* ============ FAVORITES ============ */}
-      <section id="favorit" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-24 sm:px-6 lg:px-8">
+      <section className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
-          <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
+          <div id="favorit" className="flex scroll-mt-20 flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>
               <h2 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t('fav.title')}</h2>
               <p className="mt-2 max-w-md text-sm text-muted">{t('fav.sub')}</p>

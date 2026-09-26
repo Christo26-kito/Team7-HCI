@@ -296,7 +296,7 @@ export default function Navbar() {
                 transition={{ duration: 0.3, ease: GLIDE }}
                 className="block"
               >
-                {theme === 'dark' ? <IconSun className="h-4 w-4" /> : <IconMoon className="h-4 w-4" />}
+                {theme === 'dark' ? <IconMoon className="h-4 w-4" /> : <IconSun className="h-4 w-4" />}
               </motion.span>
             </AnimatePresence>
           </button>
@@ -328,7 +328,7 @@ export default function Navbar() {
             }`}
           >
             {user ? (
-              <span className="flex h-4 w-4 items-center justify-center rounded-full bg-accent font-display text-[9px] font-bold text-bg">
+              <span className="flex h-4 w-4 items-center justify-center rounded-full border border-line bg-raised font-display text-[9px] font-bold text-ink">
                 {user.name.slice(0, 2).toUpperCase()}
               </span>
             ) : (

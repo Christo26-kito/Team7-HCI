@@ -367,21 +367,37 @@ function PrefsEditor({ prefs, setPrefs, onSave }) {
       active ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
     }`
 
+  const brandList = PRODUCTS.map((p) => p.brand)
+    .filter((b, i, a) => a.indexOf(b) === i)
+    .sort()
+  const empty = !prefs.brands.length && !prefs.categories.length && !prefs.colors.length && !prefs.gender
+
   return (
-    <div className="mt-8 max-w-xl space-y-5 rounded-card border border-line bg-surface p-6">
+    <div className="mt-8 max-w-xl space-y-6 rounded-card border border-line bg-surface p-6">
+      <div className="rounded-card border border-line bg-raised/50 px-4 py-3 text-xs leading-relaxed text-muted">
+        {t('dash.prefsImpact')}
+      </div>
+
       <div>
-        <p className="label-mega mb-2">{t('auth.onb.brand')}</p>
+        <p className="label-mega mb-2">
+          {t('auth.onb.brand')}
+          <span className="ml-2 rounded-full bg-raised px-2 py-0.5 font-display text-[10px] font-bold text-muted">
+            {prefs.brands.length} {t('dash.prefsCount')}
+          </span>
+        </p>
         <div className="flex flex-wrap gap-1.5">
-          {PRODUCTS.map((p) => p.brand)
-            .filter((b, i, a) => a.indexOf(b) === i)
-            .sort()
-            .map((b) => (
-              <button key={b} onClick={() => toggleIn('brands', b)} className={chip(prefs.brands.includes(b))}>{b}</button>
-            ))}
+          {brandList.map((b) => (
+            <button key={b} onClick={() => toggleIn('brands', b)} className={chip(prefs.brands.includes(b))}>{b}</button>
+          ))}
         </div>
       </div>
       <div>
-        <p className="label-mega mb-2">{t('auth.onb.cat')}</p>
+        <p className="label-mega mb-2">
+          {t('auth.onb.cat')}
+          <span className="ml-2 rounded-full bg-raised px-2 py-0.5 font-display text-[10px] font-bold text-muted">
+            {prefs.categories.length} {t('dash.prefsCount')}
+          </span>
+        </p>
         <div className="flex flex-wrap gap-1.5">
           {CATEGORIES.map((c) => (
             <button key={c} onClick={() => toggleIn('categories', c)} className={chip(prefs.categories.includes(c))}>
@@ -391,43 +407,59 @@ function PrefsEditor({ prefs, setPrefs, onSave }) {
         </div>
       </div>
       <div>
-        <p className="label-mega mb-2">{t('auth.onb.color')}</p>
-        <div className="flex flex-wrap gap-2">
+        <p className="label-mega mb-2">
+          {t('auth.onb.color')}
+          <span className="ml-2 rounded-full bg-raised px-2 py-0.5 font-display text-[10px] font-bold text-muted">
+            {prefs.colors.length} {t('dash.prefsCount')}
+          </span>
+        </p>
+        <div className="flex flex-wrap gap-1.5">
           {COLOR_KEYS.map((c) => (
             <button
               key={c.key}
-              title={c.label[lang]}
               onClick={() => toggleIn('colors', c.key)}
-              className={`h-6 w-6 rounded-full border transition-all duration-300 ease-glide hover:scale-110 ${
-                prefs.colors.includes(c.key) ? 'border-ink ring-2 ring-ink ring-offset-2 ring-offset-surface' : 'border-line'
+              className={`flex items-center gap-1.5 rounded-card border px-2.5 py-1.5 font-display text-xs font-semibold transition-all duration-300 ease-glide ${
+                prefs.colors.includes(c.key) ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
               }`}
-              style={{ background: c.hex }}
-            />
+            >
+              <span className="h-3.5 w-3.5 rounded-full border border-line" style={{ background: c.hex }} />
+              {c.label[lang]}
+            </button>
           ))}
         </div>
       </div>
       <div>
         <p className="label-mega mb-2">{t('auth.onb.gender')}</p>
         <div className="flex flex-wrap gap-1.5">
+          <button
+            onClick={() => setPrefs((p) => ({ ...p, gender: null }))}
+            className={chip(!prefs.gender)}
+          >
+            {t('dash.prefsGenderAll')}
+          </button>
           {['men', 'women', 'kids'].map((g) => (
             <button key={g} onClick={() => setPrefs((p) => ({ ...p, gender: p.gender === g ? null : g }))} className={chip(prefs.gender === g)}>
               {g === 'kids' ? CAT_LABEL.kids[lang] : t(`nav.${g}`)}
             </button>
           ))}
         </div>
+        {!prefs.gender && <p className="mt-1.5 text-[11px] text-muted/80">{t('dash.prefsGenderEmpty')}</p>}
       </div>
 
-      <button
-        onClick={() => {
-          onSave()
-          setSaved(true)
-          setTimeout(() => setSaved(false), 2500)
-        }}
-        className="btn-primary"
-      >
-        {t('dash.prefsSave')}
-      </button>
-      {saved && <p className="text-xs font-semibold text-ok">{t('dash.prefsSaved')}</p>}
+      <div className="flex flex-wrap items-center gap-3 border-t border-line pt-4">
+        <button
+          onClick={() => {
+            onSave()
+            setSaved(true)
+            setTimeout(() => setSaved(false), 2500)
+          }}
+          className="btn-primary"
+        >
+          {t('dash.prefsSave')}
+        </button>
+        {saved && <p className="text-xs font-semibold text-ok">{t('dash.prefsSaved')}</p>}
+        {empty && !saved && <p className="text-xs text-muted/80">{t('dash.prefsEmptyHint')}</p>}
+      </div>
     </div>
   )
 }
