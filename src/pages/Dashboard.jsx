@@ -6,7 +6,7 @@ import { PRODUCTS, CATEGORIES, COLOR_KEYS, formatIDR } from '../data/products'
 import { recommend } from '../lib/recommend'
 import { GLIDE } from '../components/Reveal'
 import { sfx } from '../lib/sound'
-import FavButton from '../components/FavLikeButton'
+import { FavButton } from '../components/FavLikeButton'
 
 const CAT_LABEL = {
   running: { id: 'Lari', en: 'Running' },

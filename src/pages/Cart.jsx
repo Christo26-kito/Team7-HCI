@@ -9,7 +9,7 @@ import { GLIDE } from '../components/Reveal'
 const CODES = { SOLE10: 0.1, VAULT15: 0.15 }
 
 export default function Cart() {
-  const { t, cartDetailed, setQty, removeItem, subtotal, discount, shipping, total, promo, setPromo } = useStore()
+  const { t, user, cartDetailed, setQty, removeItem, subtotal, discount, shipping, total, promo, setPromo } = useStore()
   const navigate = useNavigate()
   const [code, setCode] = useState('')
   const [promoMsg, setPromoMsg] = useState(null)
@@ -241,9 +241,10 @@ export default function Cart() {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => {
                   sfx.tap()
-                  navigate('/checkout')
+                  // guests must sign in first; send them back to checkout after auth
+                  navigate(user ? '/checkout' : '/login?redirect=/checkout')
                 }}
-                className="btn-primary mt-6 w-full"
+                className={`btn-primary mt-6 w-full ${!user ? 'border-dashed' : ''}`}
               >
                 {t('cart.checkout')} →
               </motion.button>

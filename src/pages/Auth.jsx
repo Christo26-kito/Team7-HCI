@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
 import { BRANDS, CATEGORIES, COLOR_KEYS, KID_SIZES } from '../data/products'
@@ -95,6 +95,8 @@ function Onboarding({ prefs, setPrefs, lang }) {
 export default function Auth({ mode }) {
   const { t, lang, user, signup, login } = useStore()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const redirect = params.get('redirect') || '/account'
   const isSignup = mode === 'signup'
 
   const [form, setForm] = useState({ name: '', email: '', pass: '' })
@@ -136,7 +138,7 @@ export default function Auth({ mode }) {
       return
     }
     sfx.success()
-    navigate('/account')
+    navigate(redirect)
   }
 
   return (
@@ -221,7 +223,10 @@ export default function Auth({ mode }) {
 
         <p className="mt-5 text-center text-sm text-muted">
           {isSignup ? t('auth.haveAccount') : t('auth.noAccount')}{' '}
-          <Link to={isSignup ? '/login' : '/signup'} className="font-display font-semibold text-accent hover:underline">
+          <Link
+            to={`${isSignup ? '/login' : '/signup'}${redirect && redirect !== '/account' ? `?redirect=${redirect}` : ''}`}
+            className="font-display font-semibold text-accent hover:underline"
+          >
             {isSignup ? t('auth.linkLogin') : t('auth.linkSignup')}
           </Link>
         </p>

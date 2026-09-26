@@ -7,7 +7,7 @@ import { recommend } from '../lib/recommend'
 import ProductCard from '../components/ProductCard'
 import FilterRail from '../components/FilterRail'
 import Reveal, { GLIDE } from '../components/Reveal'
-import HeroShoe3D from '../components/HeroShoe3D'
+import HeroTilt from '../components/HeroTilt'
 import { sfx } from '../lib/sound'
 import useDragScroll from '../lib/useDragScroll'
 
@@ -70,10 +70,10 @@ export default function Home() {
     }
   }, [sortOpen])
 
-  /* ---------- hero slideshow ---------- */
+  /* ---------- hero slideshow (lightweight image slides w/ 3D depth) ---------- */
   const slides = useMemo(
     () => [
-      { three: true, brand: 'Sole Archive', model: t('hero.badge'), price: null, product: null },
+      { img: img('/images/hero.png'), brand: 'Sole Archive', model: t('hero.badge'), price: null, product: null },
       ...PRODUCTS.filter((p) => p.tags.includes('popular'))
         .slice(0, 3)
         .map((p) => ({ img: p.image, brand: p.brand, model: p.model, price: p.price, product: p })),
@@ -255,22 +255,19 @@ export default function Home() {
                   transition={{ duration: 0.9, ease: GLIDE }}
                   className="absolute inset-0"
                 >
-                  {slides[slide].three ? (
-                    <HeroShoe3D key={slide} fallbackSrc={img('/images/hero.png')} />
-                  ) : slides[slide].product ? (
-                    <button
-                      onClick={() => {
-                        setQuick(slides[slide].product)
-                        sfx.tap()
-                      }}
-                      aria-label={`${slides[slide].brand} ${slides[slide].model}`}
-                      className="block h-full w-full"
-                    >
-                      <img src={slides[slide].img} alt={`${slides[slide].brand} ${slides[slide].model}`} className="!transition-none" />
-                    </button>
-                  ) : (
-                    <img src={slides[slide].img} alt={`${slides[slide].brand} ${slides[slide].model}`} className="!transition-none" />
-                  )}
+                  <HeroTilt
+                    key={slide}
+                    src={slides[slide].img}
+                    alt={`${slides[slide].brand} ${slides[slide].model}`}
+                    onQuick={
+                      slides[slide].product
+                        ? () => {
+                            setQuick(slides[slide].product)
+                            sfx.tap()
+                          }
+                        : undefined
+                    }
+                  />
                 </motion.div>
               </AnimatePresence>
 
@@ -345,7 +342,7 @@ export default function Home() {
 
       {/* ============ KID SECTION (ceria / colorful) ============ */}
       {catGender === 'kids' && kidsItems.length > 0 && (
-        <section id="kids" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-20 sm:px-6 lg:px-8">
+        <section id="kids" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-20 sm:px-6 lg:px-8">
           <Reveal>
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-card border-2 border-dashed p-5 sm:p-6" style={{ borderColor: '#F5B6C1' }}>
               <div className="flex items-center gap-4">
@@ -472,7 +469,7 @@ export default function Home() {
       </section>
 
       {/* ============ CATALOG ============ */}
-      <section id="katalog" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-24 sm:px-6 lg:px-8">
+      <section id="katalog" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>
@@ -615,7 +612,7 @@ export default function Home() {
       </section>
 
       {/* ============ FAVORITES ============ */}
-      <section id="favorit" className="mx-auto max-w-7xl scroll-mt-14 px-4 pt-24 sm:px-6 lg:px-8">
+      <section id="favorit" className="mx-auto max-w-7xl scroll-mt-20 px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
           <div className="flex flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
@@ -69,7 +69,7 @@ const validators = {
 }
 
 export default function Checkout() {
-  const { t, cartDetailed, subtotal, discount, shipping, total, placeOrder, clearCart } = useStore()
+  const { t, user, cartDetailed, subtotal, discount, shipping, total, placeOrder, clearCart } = useStore()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [shake, setShake] = useState(false)
@@ -88,11 +88,18 @@ export default function Checkout() {
   })
   const [errors, setErrors] = useState({})
 
+  /* auth guard: checkout requires a signed-in account (guests come here via /login?redirect=/checkout) */
+  useEffect(() => {
+    if (!user) navigate('/login?redirect=/checkout', { replace: true })
+  }, [user, navigate])
+
   const set = (k) => (e) => {
     const v = e.target.value
     setForm((f) => ({ ...f, [k]: v }))
     if (errors[k]) setErrors((er) => ({ ...er, [k]: validators[k] ? validators[k](v) : null }))
   }
+
+  if (!user) return null
 
   const stepFields = [
     ['name', 'email', 'phone', 'address', 'city', 'zip'],
