@@ -324,7 +324,7 @@ export default function Navbar() {
             aria-label={user ? t('dash.title') : t('auth.login')}
             title={user ? `${user.name}` : t('auth.login')}
             className={`relative hidden rounded-card border p-2 transition-all duration-300 ease-glide sm:block ${
-              location.pathname === '/account' ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent hover:text-ink'
+              location.pathname === '/account' ? 'border-ink text-ink' : 'border-line text-muted hover:border-accent hover:text-ink'
             }`}
           >
             {user ? (

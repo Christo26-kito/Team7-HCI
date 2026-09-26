@@ -478,7 +478,7 @@ export default function Home() {
       {/* ============ CATALOG ============ */}
       <section className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
-          <div id="katalog" className="flex scroll-mt-20 flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
+          <div id="katalog" className="flex scroll-mt-[68px] flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>
               <h2 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t('cat.title')}</h2>
               <p className="mt-2 max-w-md text-sm text-muted">{t('cat.sub')}</p>
@@ -621,7 +621,7 @@ export default function Home() {
       {/* ============ FAVORITES ============ */}
       <section className="mx-auto max-w-7xl px-4 pt-24 sm:px-6 lg:px-8">
         <Reveal>
-          <div id="favorit" className="flex scroll-mt-20 flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
+          <div id="favorit" className="flex scroll-mt-[68px] flex-wrap items-end justify-between gap-6 border-b border-line pb-8">
             <div>
               <h2 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl">{t('fav.title')}</h2>
               <p className="mt-2 max-w-md text-sm text-muted">{t('fav.sub')}</p>
