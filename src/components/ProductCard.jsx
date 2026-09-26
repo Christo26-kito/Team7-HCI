@@ -4,6 +4,7 @@ import { useStore } from '../store/StoreContext'
 import { formatIDR } from '../data/products'
 import { sfx } from '../lib/sound'
 import { GLIDE } from './Reveal'
+import { FavButton } from './FavLikeButton'
 
 function ProductCard({ product, onQuickView }) {
   const { t, addToCart } = useStore()
@@ -18,34 +19,39 @@ function ProductCard({ product, onQuickView }) {
       transition={{ duration: 0.5, ease: GLIDE }}
       className="group flex flex-col"
     >
-      <button onClick={() => onQuickView(product)} className="text-left" aria-label={`${product.brand} ${product.model}`}>
-        <div className="img-tile aspect-square shadow-none transition-shadow duration-500 ease-glide group-hover:shadow-lift">
-          <div className="h-full w-full transition-transform duration-700 ease-glide group-hover:scale-[1.07]">
-            <img
-              src={product.image}
-              alt={`${product.brand} ${product.model} ${product.colorway}`}
-              loading="lazy"
-            />
+      <div className="relative">
+        <button onClick={() => onQuickView(product)} className="block w-full text-left" aria-label={`${product.brand} ${product.model}`}>
+          <div className="img-tile aspect-square shadow-none transition-shadow duration-500 ease-glide group-hover:shadow-lift">
+            <div className="h-full w-full transition-transform duration-700 ease-glide group-hover:scale-[1.07]">
+              <img
+                src={product.image}
+                alt={`${product.brand} ${product.model} ${product.colorway}`}
+                loading="lazy"
+              />
+            </div>
+            <div className="absolute left-3 top-3 z-10 flex gap-1.5">
+              {soon && (
+                <span className="rounded-card bg-accent px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                  {t('drop.soon')}
+                </span>
+              )}
+              {!soon && product.tags.includes('new') && (
+                <span className="rounded-card bg-ink px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                  {t('card.new')}
+                </span>
+              )}
+              {product.oldPrice && (
+                <span className="rounded-card bg-warn px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                  {t('card.sale')}
+                </span>
+              )}
+            </div>
           </div>
-          <div className="absolute left-3 top-3 z-10 flex gap-1.5">
-            {soon && (
-              <span className="rounded-card bg-accent px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
-                {t('drop.soon')}
-              </span>
-            )}
-            {!soon && product.tags.includes('new') && (
-              <span className="rounded-card bg-ink px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
-                {t('card.new')}
-              </span>
-            )}
-            {product.oldPrice && (
-              <span className="rounded-card bg-warn px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
-                {t('card.sale')}
-              </span>
-            )}
-          </div>
+        </button>
+        <div className="absolute right-3 top-3 z-10">
+          <FavButton productId={product.id} />
         </div>
-      </button>
+      </div>
 
       <div className="mt-3.5 flex items-start justify-between gap-3">
         <div className="min-w-0">

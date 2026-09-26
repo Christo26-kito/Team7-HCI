@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
 import { sfx } from '../lib/sound'
 
-function FavButton({ productId, className = '' }) {
+function FavButton({ productId, className = '', labeled = false }) {
   const { t, user, favs, toggleFav } = useStore()
   const navigate = useNavigate()
   const active = favs.includes(productId)
@@ -29,30 +29,39 @@ function FavButton({ productId, className = '' }) {
     <button
       onClick={onClick}
       aria-label={t('fav.btn')}
+      aria-pressed={active}
       title={user ? t('fav.btn') : `${t('fav.btn')} — ${t('auth.linkLogin')}`}
-      className={`rounded-card border p-1.5 transition-all duration-300 ease-glide ${
-        active ? 'border-warn bg-warn/10' : 'border-line text-muted hover:border-ink hover:text-ink'
-      } ${className}`}
+      className={`rounded-card border p-2 transition-all duration-300 ease-glide ${
+        active ? 'border-warn bg-warn/10' : 'border-line bg-surface/90 text-muted hover:border-ink hover:text-ink'
+      } ${labeled ? 'flex w-full items-center justify-between px-3 py-2' : ''} ${className}`}
     >
-      <motion.span
-        key={String(active)}
-        initial={{ scale: 0.5, rotate: -20 }}
-        animate={{ scale: 1, rotate: 0 }}
-        transition={{ type: 'spring', stiffness: 500, damping: 18 }}
-        className="block"
-      >
-        <svg
-          viewBox="0 0 24 24"
-          className="h-3.5 w-3.5"
-          style={{ fill: active ? 'rgb(var(--c-warn-rgb))' : 'none' }}
-          stroke="currentColor"
-          strokeWidth="1.8"
-          strokeLinecap="round"
-          strokeLinejoin="round"
+      <span className="flex items-center gap-2">
+        <motion.span
+          key={String(active)}
+          initial={{ scale: 0.5, rotate: -20 }}
+          animate={{ scale: 1, rotate: 0 }}
+          transition={{ type: 'spring', stiffness: 500, damping: 26 }}
+          className="block"
         >
-          <path d="M12 20s-7-4.5-9-9c-1.5-3.5 1-8 5-8 2.5 0 4 1.5 4 1.5S16.5 3 19 3c4 0 6.5 4.5 5 8-2 4.5-9 9-9 9Z" />
-        </svg>
-      </motion.span>
+          <svg
+            viewBox="0 0 24 24"
+            className="h-3.5 w-3.5"
+            style={{ fill: active ? 'rgb(var(--c-warn-rgb))' : 'none' }}
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
+          </svg>
+        </motion.span>
+        {labeled && (
+          <span className="font-display text-xs font-semibold uppercase tracking-wider">
+            {active ? t('fav.on') : t('fav.btn')}
+          </span>
+        )}
+      </span>
+      {labeled && <span className="text-[10px] text-muted">{user ? t('fav.saved') : t('auth.linkLogin')}</span>}
     </button>
   )
 }
@@ -98,7 +107,7 @@ function LikeButton({ productId, likes, className = '' }) {
       >
         <path d="M7 10v12H4V10h3Zm0 0 4-7c1.5 0 2.5 1 2.5 2.5V9h5c1.5 0 2.5 1.2 2 2.6l-2.4 7c-.4 1-1.3 1.4-2.3 1.4H7" />
       </motion.svg>
-      <span className="font-display font-semibold">{(likes + (active ? 1 : 0)).toLocaleString('id-ID')}</span>
+      <span className="font-display font-semibold">{((likes ?? 0) + (active ? 1 : 0)).toLocaleString('id-ID')}</span>
       <AnimatePresence>
         {pop && (
           <motion.span

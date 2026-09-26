@@ -4,6 +4,7 @@ import { useStore } from '../store/StoreContext'
 import { formatIDR } from '../data/products'
 import { sfx } from '../lib/sound'
 import { GLIDE, SETTLE } from './Reveal'
+import { FavButton } from './FavLikeButton'
 
 export default function QuickView({ product, onClose }) {
   const { t, lang, addToCart } = useStore()
@@ -79,6 +80,9 @@ export default function QuickView({ product, onClose }) {
           </div>
 
           <p className="text-sm leading-relaxed text-muted">{product.desc[lang]}</p>
+
+          {/* favourite this product straight from the quick view */}
+          <FavButton productId={product.id} labeled />
 
           {soon ? (
             <div className="mt-auto space-y-3">

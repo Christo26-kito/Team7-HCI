@@ -268,6 +268,8 @@ export const dict = {
     /* ---------- product interactions ---------- */
     'like.toast': 'Ditambahkan ke daftarmu',
     'fav.btn': 'Favorit',
+    'fav.on': 'Tersimpan',
+    'fav.saved': 'di Favoritku',
     'like.btn': 'Suka',
 
     /* ---------- order tracking ---------- */
@@ -566,6 +568,8 @@ export const dict = {
     /* ---------- product interactions ---------- */
     'like.toast': 'Added to your list',
     'fav.btn': 'Favorite',
+    'fav.on': 'Saved',
+    'fav.saved': 'in My Favorites',
     'like.btn': 'Like',
 
     /* ---------- order tracking ---------- */
