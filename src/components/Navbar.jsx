@@ -134,7 +134,7 @@ export default function Navbar() {
 
   const viewAllMatches = () => {
     setSearchFocused(false)
-    document.getElementById('katalog')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    document.getElementById('katalog')?.scrollIntoView({ behavior: 'smooth', block: 'center' })
   }
 
   const goHome = (e) => {
