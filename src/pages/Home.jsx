@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
-import { PRODUCTS, PRICE_MIN, PRICE_MAX, formatIDR, img } from '../data/products'
+import { PRODUCTS, PRICE_MIN, PRICE_MAX, formatIDR } from '../data/products'
 import { recommend } from '../lib/recommend'
 import ProductCard from '../components/ProductCard'
 import FilterRail from '../components/FilterRail'
@@ -72,13 +72,11 @@ export default function Home() {
 
   /* ---------- hero slideshow (lightweight image slides w/ 3D depth) ---------- */
   const slides = useMemo(
-    () => [
-      { img: img('/images/hero.png'), brand: 'Sole Archive', model: t('hero.badge'), price: null, product: null },
-      ...PRODUCTS.filter((p) => p.tags.includes('popular'))
+    () =>
+      PRODUCTS.filter((p) => p.tags.includes('popular'))
         .slice(0, 3)
         .map((p) => ({ img: p.image, brand: p.brand, model: p.model, price: p.price, product: p })),
-    ],
-    [t],
+    [],
   )
   const [slide, setSlide] = useState(0)
   const [paused, setPaused] = useState(false)

@@ -9,10 +9,11 @@ import { GLIDE } from '../components/Reveal'
 const STEPS = ['co.step1', 'co.step2', 'co.step3']
 
 const PAY_METHODS = [
-  { key: 'card', icon: '💳' },
-  { key: 'ewallet', icon: '📱' },
+  { key: 'debit', icon: '💳' },
+  { key: 'qris', icon: '📱' },
   { key: 'cod', icon: '💵' },
 ]
+const ONLINE_METHODS = ['debit', 'qris'] // Pay Now / PayLater only apply here
 
 function Check() {
   return (
@@ -73,7 +74,6 @@ export default function Checkout() {
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [shake, setShake] = useState(false)
-  const [payLater, setPayLater] = useState(false)
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -81,12 +81,15 @@ export default function Checkout() {
     address: '',
     city: '',
     zip: '',
-    method: 'card',
+    method: 'debit',
     cardNo: '',
     cardExp: '',
     cardCvv: '',
   })
   const [errors, setErrors] = useState({})
+  /* PayLater tenor (only relevant for QRIS / Debit methods) */
+  const [payLater, setPayLater] = useState(false)
+  const [tenor, setTenor] = useState('30')
 
   /* auth guard: checkout requires a signed-in account (guests come here via /login?redirect=/checkout) */
   useEffect(() => {
@@ -103,7 +106,7 @@ export default function Checkout() {
 
   const stepFields = [
     ['name', 'email', 'phone', 'address', 'city', 'zip'],
-    form.method === 'card' ? ['cardNo', 'cardExp', 'cardCvv'] : [],
+    form.method === 'debit' ? ['cardNo', 'cardExp', 'cardCvv'] : [],
     [],
   ]
 
@@ -128,34 +131,41 @@ export default function Checkout() {
     if (validateStep(step)) setStep((s) => Math.min(2, s + 1))
   }
 
-  const confirmOrder = () => {
-    const order = {
-      id: 'SA-' + Math.floor(100000 + Math.random() * 900000),
-      date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
-      items: cartDetailed.map((i) => ({ pid: i.id, model: i.product.model, brand: i.product.brand, size: i.size, qty: i.qty, price: i.product.price, image: i.product.image })),
-      subtotal,
-      discount,
-      shipping,
-      total,
-      name: form.name,
-      address: `${form.address}, ${form.city} ${form.zip}`,
-      city: form.city,
-      zip: form.zip,
-      method: form.method,
-    }
-    if (payLater) {
-      // Save as a PENDING order so it shows up in Order History → Pending Payment.
-      placeOrder({ ...order, status: 'pending' })
-      clearCart()
-      sfx.tap()
-      navigate('/account')
-    } else {
-      // Immediate payment → courier already on the way.
-      placeOrder({ ...order, status: 'inprogress' })
-      clearCart()
-      sfx.success()
-      navigate('/success')
-    }
+  const isOnline = ONLINE_METHODS.includes(form.method)
+  const isCod = form.method === 'cod'
+  const payLaterActive = payLater && isOnline
+
+  const buildOrder = () => ({
+    id: 'SA-' + Math.floor(100000 + Math.random() * 900000),
+    date: new Date().toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' }),
+    items: cartDetailed.map((i) => ({ pid: i.id, model: i.product.model, brand: i.product.brand, size: i.size, qty: i.qty, price: i.product.price, image: i.product.image })),
+    subtotal,
+    discount,
+    shipping,
+    total,
+    name: form.name,
+    address: `${form.address}, ${form.city} ${form.zip}`,
+    city: form.city,
+    zip: form.zip,
+    method: form.method,
+  })
+
+  /* Pay Now (QRIS/Debit) & COD → straight into the normal processing flow. */
+  const placeNow = () => {
+    placeOrder({ ...buildOrder(), status: 'inprogress' })
+    clearCart()
+    sfx.success()
+    navigate('/success')
+  }
+
+  /* PayLater (QRIS/Debit, after picking a tenor): user stays on this Review Order page,
+     then clicking "Pay" processes the order and goes to the confirmation screen. */
+  const placeLater = () => {
+    if (!tenor) return
+    placeOrder({ ...buildOrder(), status: 'inprogress', payMode: 'later', tenor })
+    clearCart()
+    sfx.success()
+    navigate('/success')
   }
 
   const err = (k) => (errors[k] ? t(errors[k]) : null)
@@ -245,6 +255,7 @@ export default function Checkout() {
                     key={m.key}
                     onClick={() => {
                       setForm((f) => ({ ...f, method: m.key }))
+                      if (m.key === 'cod') setPayLater(false) // PayLater only applies to QRIS/Debit
                       sfx.tap()
                     }}
                     className={`relative rounded-card border p-4 text-left transition-all duration-300 ease-glide ${
@@ -266,7 +277,7 @@ export default function Checkout() {
                 ))}
               </div>
 
-              {form.method === 'card' && (
+              {form.method === 'debit' && (
                 <div className="grid gap-5 pt-6 sm:grid-cols-[2fr_1fr_1fr]">
                   <Field label={t('co.cardNo')} inputMode="numeric" value={form.cardNo} onChange={set('cardNo')} error={err('cardNo')} valid={ok('cardNo')} shake={shake} placeholder="4242 4242 4242 4242" />
                   <Field label={t('co.cardExp')} value={form.cardExp} onChange={set('cardExp')} error={err('cardExp')} valid={ok('cardExp')} shake={shake} placeholder="12/28" />
@@ -287,28 +298,60 @@ export default function Checkout() {
               className="space-y-6"
             >
               <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-card border border-line bg-surface p-5">
-                  <p className="label-mega mb-2">{t('co.payNow')} / {t('co.payLater')}</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    <button
-                      onClick={() => setPayLater(false)}
-                      className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
-                        !payLater ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent'
-                      }`}
-                    >
-                      {t('co.payNow')}
-                    </button>
-                    <button
-                      onClick={() => setPayLater(true)}
-                      className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
-                        payLater ? 'border-warn bg-warn text-bg' : 'border-line text-muted hover:border-accent'
-                      }`}
-                    >
-                      {t('co.payLater')}
-                    </button>
+                {isCod ? (
+                  <div className="rounded-card border border-line bg-surface p-5 sm:col-span-2">
+                    <p className="label-mega mb-2">{t('co.payNow')}</p>
+                    <p className="text-sm text-muted">{t('co.codNote')}</p>
                   </div>
-                  {payLater && <p className="mt-2 text-[11px] text-muted">{t('co.payLaterSub')}</p>}
-                </div>
+                ) : (
+                  <div className="rounded-card border border-line bg-surface p-5">
+                    <p className="label-mega mb-2">{t('co.payNow')} / {t('co.payLater')}</p>
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => setPayLater(false)}
+                        className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                          !payLater ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent'
+                        }`}
+                      >
+                        {t('co.payNow')}
+                      </button>
+                      <button
+                        onClick={() => setPayLater(true)}
+                        className={`rounded-card border px-3 py-2.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                          payLater ? 'border-warn bg-warn text-bg' : 'border-line text-muted hover:border-accent'
+                        }`}
+                      >
+                        {t('co.payLater')}
+                      </button>
+                    </div>
+                    {payLaterActive && (
+                      <div className="mt-4 border-t border-line pt-4">
+                        <p className="label-mega mb-2">{t('co.tenorTitle')}</p>
+                        <div className="flex flex-wrap gap-2">
+                          {['30', '3m', '6m'].map((k) => (
+                            <button
+                              key={k}
+                              onClick={() => setTenor(k)}
+                              className={`rounded-card border px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                                tenor === k ? 'border-ink bg-ink text-bg' : 'border-line text-muted hover:border-accent'
+                              }`}
+                            >
+                              {t(`co.tenor.${k}`)}
+                            </button>
+                          ))}
+                        </div>
+                        <motion.button
+                          whileTap={{ scale: 0.97 }}
+                          onClick={placeLater}
+                          className="btn-primary mt-4 w-full"
+                        >
+                          {t('co.pay')} · {t(`co.tenor.${tenor}`)}
+                        </motion.button>
+                        <p className="mt-2 text-[11px] text-muted">{t('co.payLaterSub')}</p>
+                      </div>
+                    )}
+                  </div>
+                )}
                 <div className="rounded-card border border-line bg-surface p-5">
                   <p className="label-mega mb-2">{t('co.reviewAddr')}</p>
                   <p className="font-display text-sm font-bold">{form.name}</p>
@@ -385,10 +428,12 @@ export default function Checkout() {
             <motion.button whileTap={{ scale: 0.97 }} onClick={next} className="btn-primary">
               {t('co.next')} →
             </motion.button>
-          ) : (
-            <motion.button whileTap={{ scale: 0.97 }} onClick={confirmOrder} className="btn-primary">
-              {t('co.place')} — {formatIDR(total)}
+          ) : !payLaterActive ? (
+            <motion.button whileTap={{ scale: 0.97 }} onClick={placeNow} className="btn-primary">
+              {isCod || !payLater ? `${t('co.place')} — ${formatIDR(total)}` : `${t('co.payNow')} — ${formatIDR(total)}`}
             </motion.button>
+          ) : (
+            <span className="text-xs text-muted">{t('co.payLaterSub')}</span>
           )}
         </div>
       </div>

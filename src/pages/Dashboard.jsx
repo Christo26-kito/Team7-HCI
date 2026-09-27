@@ -47,6 +47,9 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
   const [confirmCancel, setConfirmCancel] = useState(false)
   const isPending = o.status === 'pending'
   const countdown = useCountdown(deadlineFor(o), isPending)
+  const isLater = o.payMode === 'later' && isPending
+  const methodLabel = o.method
+    ? t(`co.pay.${o.method}`) : null
   return (
     <div className={`rounded-card border bg-surface p-4 transition-all duration-300 ease-glide ${o.status === 'pending' ? 'border-warn/50 shadow-lift' : 'border-line'}`}>
       <div className="flex items-center justify-between gap-3">
@@ -58,6 +61,21 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
           {t(STATUS_KEY[o.status] || STATUS_KEY.cancelled)}
         </span>
       </div>
+
+      {(methodLabel || isLater) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {methodLabel && (
+            <span className="rounded-card border border-line px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-muted">
+              {methodLabel}
+            </span>
+          )}
+          {isLater && (
+            <span className="rounded-card border border-warn/50 bg-warn/10 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-warn">
+              {t('co.payLater')} · {t(`co.tenor.${o.tenor || '30'}`)}
+            </span>
+          )}
+        </div>
+      )}
 
       <ul className="mt-3 flex flex-wrap gap-2">
         {o.items.slice(0, 4).map((i, idx) => (
@@ -80,7 +98,7 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
               {t('dash.deadline')} {countdown.mm}:{countdown.ss}
             </span>
           )}
-          {(o.status === 'inprogress' || o.status === 'completed') && (
+          {(o.status === 'inprogress' || o.status === 'completed') && o.method !== 'cod' && (
             <button onClick={() => onTrack(o)} className="rounded-card border border-line px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide hover:border-ink hover:bg-ink hover:text-bg">
               {t('dash.tracking')}
             </button>
@@ -90,7 +108,7 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
               onClick={() => onPay(o.id)}
               className="rounded-card border border-ok bg-ok px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider text-bg transition-all duration-300 ease-glide hover:-translate-y-0.5 hover:shadow-lift"
             >
-              {t('dash.payNow')}
+              {isLater ? t('co.pay') : t('dash.payNow')}
             </button>
           )}
           {(o.status === 'pending' || o.status === 'inprogress') && !confirmCancel && (
