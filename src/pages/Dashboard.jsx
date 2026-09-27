@@ -47,9 +47,12 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
   const [confirmCancel, setConfirmCancel] = useState(false)
   const isPending = o.status === 'pending'
   const countdown = useCountdown(deadlineFor(o), isPending)
-  const isLater = o.payMode === 'later' && isPending
-  const methodLabel = o.method
-    ? t(`co.pay.${o.method}`) : null
+  /* legacy orders used 'card'/'ewallet' before the QRIS/Debit naming */
+  const normMethod = { card: 'debit', ewallet: 'qris' }
+  const m = normMethod[o.method] || o.method
+  const isLater = o.payMode === 'later' && o.tenor && o.status !== 'cancelled'
+  const methodLabel = m
+    ? t(`co.pay.${m}`) : null
   return (
     <div className={`rounded-card border bg-surface p-4 transition-all duration-300 ease-glide ${o.status === 'pending' ? 'border-warn/50 shadow-lift' : 'border-line'}`}>
       <div className="flex items-center justify-between gap-3">
@@ -93,12 +96,12 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
       <div className="mt-3 flex items-center justify-between border-t border-line-soft pt-3">
         <p className="font-display text-sm font-extrabold">{formatIDR(o.total)}</p>
         <div className="flex items-center gap-2">
-          {o.status === 'pending' && countdown && (
+          {o.status === 'pending' && m !== 'cod' && countdown && (
             <span className="rounded-card bg-warn/10 px-2 py-1 font-display text-xs font-bold tabular-nums text-warn">
               {t('dash.deadline')} {countdown.mm}:{countdown.ss}
             </span>
           )}
-          {(o.status === 'inprogress' || o.status === 'completed') && o.method !== 'cod' && (
+          {(o.status === 'inprogress' || o.status === 'completed') && m !== 'cod' && (
             <button onClick={() => onTrack(o)} className="rounded-card border border-line px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all duration-300 ease-glide hover:border-ink hover:bg-ink hover:text-bg">
               {t('dash.tracking')}
             </button>

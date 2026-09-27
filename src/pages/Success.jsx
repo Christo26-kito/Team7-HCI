@@ -164,6 +164,17 @@ export default function Success() {
         <div className="border-t border-line px-4 py-3 text-xs text-muted">
           {t('co.reviewAddr')}: <span className="text-ink">{lastOrder.name}</span>, {lastOrder.address}
         </div>
+        <div className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
+          <span className="font-display text-[10px] font-bold uppercase tracking-wider text-muted">
+            {lastOrder.method ? t(`co.pay.${lastOrder.method}`) : ''}
+          </span>
+          {lastOrder.payMode === 'later' && lastOrder.tenor && (
+            <span className="rounded-full border border-warn/50 bg-warn/10 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-warn">
+              {t('co.payLater')} · {t(`co.tenor.${lastOrder.tenor}`)}
+            </span>
+          )}
+          {lastOrder.method === 'cod' && <span className="text-[11px]">{t('co.codNote')}</span>}
+        </div>
       </motion.div>
 
       {/* Status timeline */}

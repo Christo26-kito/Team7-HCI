@@ -128,6 +128,11 @@ export const dict = {
     'co.pay.qrisSub': 'Scan dengan e-wallet apa pun',
     'co.pay.cod': 'COD — Bayar di Tempat',
     'co.pay.codSub': 'Tunai saat barang tiba',
+    /* legacy aliases: older saved orders used card/ewallet keys */
+    'co.pay.card': 'Kartu Debit',
+    'co.pay.cardSub': '',
+    'co.pay.ewallet': 'QRIS',
+    'co.pay.ewalletSub': '',
     'co.codNote': 'Tidak perlu membayar di muka. Bayar tunai saat pesanan tiba.',
     'co.tenorTitle': 'Pilih tenor PayLater',
     'co.tenor.30': '30 Hari',
@@ -439,6 +444,11 @@ export const dict = {
     'co.pay.qrisSub': 'Scan with any e-wallet',
     'co.pay.cod': 'COD — Cash on Delivery',
     'co.pay.codSub': 'Pay cash when it arrives',
+    /* legacy aliases: older saved orders used card/ewallet keys */
+    'co.pay.card': 'Debit Card',
+    'co.pay.cardSub': '',
+    'co.pay.ewallet': 'QRIS',
+    'co.pay.ewalletSub': '',
     'co.codNote': 'No upfront payment. Pay in cash when your order arrives.',
     'co.tenorTitle': 'Choose PayLater tenor',
     'co.tenor.30': '30 Days',
