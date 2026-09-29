@@ -164,6 +164,12 @@ export default function Success() {
         <div className="border-t border-line px-4 py-3 text-xs text-muted">
           {t('co.reviewAddr')}: <span className="text-ink">{lastOrder.name}</span>, {lastOrder.address}
         </div>
+        {lastOrder.courierNote && (
+          <div className="border-t border-dashed border-accent/40 bg-accent/5 px-4 py-3">
+            <p className="label-mega">{t('co.noteLabel')}</p>
+            <p className="mt-1 text-xs leading-relaxed text-ink">{lastOrder.courierNote}</p>
+          </div>
+        )}
         <div className="flex flex-wrap items-center gap-2 border-t border-line px-4 py-3">
           <span className="font-display text-[10px] font-bold uppercase tracking-wider text-muted">
             {lastOrder.method ? t(`co.pay.${lastOrder.method}`) : ''}

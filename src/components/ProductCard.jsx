@@ -1,15 +1,18 @@
 import { memo, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
-import { formatIDR } from '../data/products'
+import { formatIDR, stockOf, stockTier } from '../data/products'
 import { sfx } from '../lib/sound'
 import { GLIDE } from './Reveal'
 import { FavButton } from './FavLikeButton'
 
 function ProductCard({ product, onQuickView }) {
-  const { t, addToCart } = useStore()
+  const { t, addToCart, cart } = useStore()
   const [notified, setNotified] = useState(false)
   const soon = product.status === 'soon'
+  const reserved = cart.reduce((s, i) => s + (i.id === product.id ? i.qty : 0), 0)
+  const left = stockOf(product) - reserved
+  const tier = left <= 0 ? 'out' : stockTier(left)
   const defaultSize = product.sizes[Math.floor(product.sizes.length / 2)]
 
   return (
@@ -33,6 +36,16 @@ function ProductCard({ product, onQuickView }) {
               {soon && (
                 <span className="rounded-card bg-accent px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
                   {t('drop.soon')}
+                </span>
+              )}
+              {!soon && tier === 'out' && (
+                <span className="rounded-card bg-warn px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                  {t('card.soldOut')}
+                </span>
+              )}
+              {!soon && tier === 'low' && (
+                <span className="animate-pulse rounded-card border border-warn/60 bg-warn/90 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                  {t('card.lowStock')} · {t('card.stockLeft')} {left}
                 </span>
               )}
               {!soon && product.tags.includes('new') && (
@@ -98,13 +111,19 @@ function ProductCard({ product, onQuickView }) {
               <span>{product.likes.toLocaleString('id-ID')}</span>
             </div>
             <button
+              disabled={tier === 'out'}
               onClick={() => {
+                if (tier === 'out') return
                 addToCart(product.id, defaultSize, 1)
                 sfx.click()
               }}
-              className="rounded-card border border-line px-3.5 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-all duration-300 ease-glide hover:-translate-y-0.5 hover:border-ink hover:bg-ink hover:text-bg active:translate-y-0"
+              className={`rounded-card border px-3.5 py-1.5 font-display text-xs font-semibold uppercase tracking-wider transition-all duration-300 ease-glide ${
+                tier === 'out'
+                  ? 'cursor-not-allowed border-line text-muted/50'
+                  : 'border-line hover:-translate-y-0.5 hover:border-ink hover:bg-ink hover:text-bg active:translate-y-0'
+              }`}
             >
-              {t('card.add')}
+              {tier === 'out' ? t('card.soldOut') : t('card.add')}
             </button>
           </>
         )}

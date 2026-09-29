@@ -85,6 +85,7 @@ export default function Checkout() {
     cardNo: '',
     cardExp: '',
     cardCvv: '',
+    courierNote: '',
   })
   const [errors, setErrors] = useState({})
   /* PayLater tenor (only relevant for QRIS / Debit methods) */
@@ -148,6 +149,7 @@ export default function Checkout() {
     city: form.city,
     zip: form.zip,
     method: form.method,
+    courierNote: form.courierNote.trim() || null,
   })
 
   /* Pay Now (QRIS/Debit) & COD → straight into the normal processing flow. */
@@ -236,6 +238,10 @@ export default function Checkout() {
               <Field label={t('co.address')} value={form.address} onChange={set('address')} error={err('address')} valid={ok('address')} shake={shake} placeholder="Jl. Merdeka No. 45, RT 02/RW 03" className="sm:col-span-2" />
               <Field label={t('co.city')} value={form.city} onChange={set('city')} error={err('city')} valid={ok('city')} shake={shake} placeholder="Tangerang" />
               <Field label={t('co.zip')} inputMode="numeric" maxLength={5} value={form.zip} onChange={set('zip')} error={err('zip')} valid={ok('zip')} shake={shake} placeholder="15810" />
+              <div className="sm:col-span-2">
+                <Field label={t('co.note')} value={form.courierNote} onChange={set('courierNote')} shake={shake} placeholder={t('co.notePh')} />
+                <p className="mt-1 text-[11px] text-muted/80">{t('co.noteSub')}</p>
+              </div>
             </motion.div>
           )}
 
@@ -363,6 +369,12 @@ export default function Checkout() {
                     {form.email} · {form.phone}
                   </p>
                 </div>
+                {form.courierNote.trim() && (
+                  <div className="rounded-card border border-dashed border-accent/50 bg-accent/5 p-5 sm:col-span-2">
+                    <p className="label-mega mb-2">{t('co.noteLabel')}</p>
+                    <p className="text-sm leading-relaxed text-ink">{form.courierNote}</p>
+                  </div>
+                )}
                 <div className="rounded-card border border-line bg-surface p-5">
                   <p className="label-mega mb-2">{t('co.reviewPay')}</p>
                   <p className="font-display text-sm font-bold">{t(`co.pay.${form.method}`)}</p>

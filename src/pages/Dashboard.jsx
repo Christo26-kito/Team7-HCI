@@ -80,6 +80,13 @@ function OrderCard({ o, onPay, onCancel, onTrack, deadlineFor }) {
         </div>
       )}
 
+      {o.courierNote && (
+        <div className="mt-2 rounded-card border border-dashed border-accent/40 bg-accent/5 px-3 py-2">
+          <p className="label-mega !mb-1 !text-[9px]">{t('co.noteLabel')}</p>
+          <p className="truncate text-xs text-ink" title={o.courierNote}>{o.courierNote}</p>
+        </div>
+      )}
+
       <ul className="mt-3 flex flex-wrap gap-2">
         {o.items.slice(0, 4).map((i, idx) => (
           <li key={idx} className="flex items-center gap-2 rounded-card border border-line bg-raised/40 px-2 py-1 text-xs">

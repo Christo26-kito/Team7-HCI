@@ -1,18 +1,22 @@
 import { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
-import { formatIDR } from '../data/products'
+import { formatIDR, stockOf, stockTier } from '../data/products'
 import { sfx } from '../lib/sound'
 import { GLIDE, SETTLE } from './Reveal'
 import { FavButton } from './FavLikeButton'
 
 export default function QuickView({ product, onClose }) {
-  const { t, lang, addToCart } = useStore()
+  const { t, lang, addToCart, cart } = useStore()
   const [size, setSize] = useState(null)
   const [qty, setQty] = useState(1)
   const [sizeErr, setSizeErr] = useState(false)
   const [notified, setNotified] = useState(false)
   const soon = product.status === 'soon'
+  const reserved = cart.reduce((s, i) => s + (i.id === product.id ? i.qty : 0), 0)
+  const left = stockOf(product) - reserved
+  const cap = Math.max(1, Math.min(9, left))
+  const tier = left <= 0 ? 'out' : stockTier(left)
 
   const handleAdd = () => {
     if (!size) {
@@ -79,6 +83,18 @@ export default function QuickView({ product, onClose }) {
             )}
           </div>
 
+          {!soon && (
+            <p
+              className={`text-xs font-semibold ${
+                tier === 'out' ? 'text-warn' : tier === 'low' ? 'text-warn' : 'text-muted'
+              }`}
+            >
+              {tier === 'out'
+                ? t('card.soldOut')
+                : `${t('qv.stockLeft')}: ${left} ${tier === 'low' ? '· ' + t('card.lowStock') : ''}`}
+            </p>
+          )}
+
           <p className="text-sm leading-relaxed text-muted">{product.desc[lang]}</p>
 
           {/* favourite this product straight from the quick view */}
@@ -142,17 +158,24 @@ export default function QuickView({ product, onClose }) {
                     {qty}
                   </motion.span>
                   <button
-                    onClick={() => setQty((q) => Math.min(9, q + 1))}
-                    className="px-3 py-1.5 text-muted transition-colors hover:text-ink"
+                    disabled={qty >= cap}
+                    onClick={() => setQty((q) => Math.min(cap, q + 1))}
+                    className={`px-3 py-1.5 transition-colors ${qty >= cap ? 'cursor-not-allowed text-muted/40' : 'text-muted hover:text-ink'}`}
                     aria-label="+"
                   >
                     +
                   </button>
                 </div>
+                {cap < 9 && <p className="text-[10px] text-muted/70">{t('qv.capped')} ({left})</p>}
               </div>
 
-              <motion.button onClick={handleAdd} whileTap={{ scale: 0.97 }} className="btn-primary mt-auto w-full">
-                {t('qv.add')} — {formatIDR(product.price * qty)}
+              <motion.button
+                onClick={handleAdd}
+                whileTap={{ scale: 0.97 }}
+                disabled={tier === 'out'}
+                className={`btn-primary mt-auto w-full ${tier === 'out' ? 'cursor-not-allowed opacity-40' : ''}`}
+              >
+                {tier === 'out' ? t('card.soldOut') : `${t('qv.add')} — ${formatIDR(product.price * qty)}`}
               </motion.button>
             </>
           )}

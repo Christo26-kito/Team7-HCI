@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useStore } from '../store/StoreContext'
-import { formatIDR } from '../data/products'
+import { formatIDR, stockOf } from '../data/products'
 import { sfx } from '../lib/sound'
 import { GLIDE } from '../components/Reveal'
 
@@ -87,6 +87,11 @@ export default function Cart() {
                         <span className="absolute bottom-2 left-2 rounded-card bg-ink/85 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg backdrop-blur">
                           UK {item.size}
                         </span>
+                        {stockOf(item.product) <= 3 && (
+                          <span className="absolute top-2 left-2 animate-pulse rounded-card border border-warn/60 bg-warn/90 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg backdrop-blur">
+                            {t('card.lowStock')} · {t('card.stockLeft')} {stockOf(item.product)}
+                          </span>
+                        )}
                       </div>
 
                       <div className="flex min-w-0 flex-1 flex-col">
@@ -112,30 +117,36 @@ export default function Cart() {
                         </div>
 
                         <div className="mt-4 flex flex-wrap items-end justify-between gap-3">
-                          <div className="flex items-center rounded-card border border-line bg-bg/40">
-                            <button
-                              onClick={() => setQty(item.id, item.size, item.qty - 1)}
-                              className="px-3.5 py-2 text-muted transition-colors hover:text-ink"
-                              aria-label="-"
-                            >
-                              −
-                            </button>
-                            <motion.span
-                              key={item.qty}
-                              initial={{ scale: 0.6, opacity: 0 }}
-                              animate={{ scale: 1, opacity: 1 }}
-                              transition={{ type: 'spring', stiffness: 500, damping: 24 }}
-                              className="w-9 text-center font-display text-sm font-bold"
-                            >
-                              {item.qty}
-                            </motion.span>
-                            <button
-                              onClick={() => setQty(item.id, item.size, Math.min(9, item.qty + 1))}
-                              className="px-3.5 py-2 text-muted transition-colors hover:text-ink"
-                              aria-label="+"
-                            >
-                              +
-                            </button>
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center rounded-card border border-line bg-bg/40">
+                              <button
+                                onClick={() => setQty(item.id, item.size, item.qty - 1)}
+                                className="px-3.5 py-2 text-muted transition-colors hover:text-ink"
+                                aria-label="-"
+                              >
+                                −
+                              </button>
+                              <motion.span
+                                key={item.qty}
+                                initial={{ scale: 0.6, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ type: 'spring', stiffness: 500, damping: 24 }}
+                                className="w-9 text-center font-display text-sm font-bold"
+                              >
+                                {item.qty}
+                              </motion.span>
+                              <button
+                                disabled={item.qty >= stockOf(item.product)}
+                                onClick={() => setQty(item.id, item.size, Math.min(stockOf(item.product), item.qty + 1))}
+                                className={`px-3.5 py-2 transition-colors ${item.qty >= stockOf(item.product) ? 'cursor-not-allowed text-muted/40' : 'text-muted hover:text-ink'}`}
+                                aria-label="+"
+                              >
+                                +
+                              </button>
+                            </div>
+                            {stockOf(item.product) < 9 && (
+                              <p className="text-[10px] text-muted/70">{t('qv.capped')} ({stockOf(item.product)})</p>
+                            )}
                           </div>
                           <div className="text-right">
                             <p className="text-xs text-muted">

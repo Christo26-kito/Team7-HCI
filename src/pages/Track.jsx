@@ -43,13 +43,29 @@ export default function Track() {
           <p className="font-display text-sm font-bold">{order.name}</p>
           <p className="mt-1 text-sm text-muted">{order.address}</p>
         </div>
-        <div className="rounded-card border border-line bg-surface p-5">
-          <p className="label-mega mb-2">{t('cart.total')}</p>
-          <p className="font-display text-xl font-extrabold">{formatIDR(order.total)}</p>
-          <p className="mt-1 text-xs text-muted">
-            {order.items.reduce((s, i) => s + i.qty, 0)} {t('co.items')} · {t(`co.pay.${order.method}`)}
-          </p>
-        </div>
+        {order.courierNote ? (
+          <div className="rounded-card border border-dashed border-accent/50 bg-accent/5 p-5">
+            <p className="label-mega mb-2">{t('co.noteLabel')}</p>
+            <p className="text-sm leading-relaxed text-ink">{order.courierNote}</p>
+          </div>
+        ) : (
+          <div className="rounded-card border border-line bg-surface p-5">
+            <p className="label-mega mb-2">{t('cart.total')}</p>
+            <p className="font-display text-xl font-extrabold">{formatIDR(order.total)}</p>
+            <p className="mt-1 text-xs text-muted">
+              {order.items.reduce((s, i) => s + i.qty, 0)} {t('co.items')} · {t(`co.pay.${order.method}`)}
+            </p>
+          </div>
+        )}
+        {order.courierNote && (
+          <div className="rounded-card border border-line bg-surface p-5 sm:col-span-2">
+            <p className="label-mega mb-2">{t('cart.total')}</p>
+            <p className="font-display text-xl font-extrabold">{formatIDR(order.total)}</p>
+            <p className="mt-1 text-xs text-muted">
+              {order.items.reduce((s, i) => s + i.qty, 0)} {t('co.items')} · {t(`co.pay.${order.method}`)}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="mt-8 flex flex-wrap items-center gap-3 border-t border-line pt-6 pb-12">
