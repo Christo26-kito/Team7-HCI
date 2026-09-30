@@ -633,7 +633,7 @@ export const img = (path) => BASE + path.replace(/^\/?/, '')
 
 export const BRANDS = [...new Set(PRODUCTS.map((p) => p.brand))].sort()
 export const ALL_SIZES = [...new Set(PRODUCTS.flatMap((p) => p.sizes))].sort((a, b) => a - b)
-export const CATEGORIES = ['running', 'lifestyle', 'basketball', 'trail', 'kids']
+export const CATEGORIES = ['running', 'lifestyle', 'basketball', 'trail']
 export const KID_SIZES = [2.5, 3, 3.5, 4, 4.5, 5, 5.5, 6]
 export const COLOR_KEYS = [
   { key: 'bone', hex: '#e3ddd1', label: { id: 'Bone', en: 'Bone' } },
