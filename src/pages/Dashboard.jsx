@@ -466,7 +466,7 @@ function PrefsEditor({ prefs, setPrefs, onSave }) {
           </button>
           {['men', 'women', 'kids'].map((g) => (
             <button key={g} onClick={() => setPrefs((p) => ({ ...p, gender: p.gender === g ? null : g }))} className={chip(prefs.gender === g)}>
-              {g === 'kids' ? CAT_LABEL.kids[lang] : t(`nav.${g}`)}
+              {t(`nav.${g}`)}
             </button>
           ))}
         </div>
