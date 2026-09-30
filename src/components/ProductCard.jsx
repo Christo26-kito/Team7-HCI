@@ -38,16 +38,6 @@ function ProductCard({ product, onQuickView }) {
                   {t('drop.soon')}
                 </span>
               )}
-              {!soon && tier === 'out' && (
-                <span className="rounded-card bg-warn px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
-                  {t('card.soldOut')}
-                </span>
-              )}
-              {!soon && tier === 'low' && (
-                <span className="animate-pulse rounded-card border border-warn/60 bg-warn/90 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
-                  {t('card.lowStock')} · {t('card.stockLeft')} {left}
-                </span>
-              )}
               {!soon && product.tags.includes('new') && (
                 <span className="rounded-card bg-ink px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
                   {t('card.new')}
@@ -59,6 +49,16 @@ function ProductCard({ product, onQuickView }) {
                 </span>
               )}
             </div>
+            {!soon && tier === 'out' && (
+              <span className="absolute bottom-3 left-3 z-10 rounded-card bg-warn px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                {t('card.soldOut')}
+              </span>
+            )}
+            {!soon && tier === 'low' && (
+              <span className="absolute bottom-3 left-3 z-10 animate-pulse rounded-card border border-warn/60 bg-warn/90 px-2 py-0.5 font-display text-[10px] font-bold uppercase tracking-wider text-bg">
+                {t('card.lowStock')} · {t('card.stockLeft')} {left}
+              </span>
+            )}
           </div>
         </button>
         <div className="absolute right-3 top-3 z-10">
